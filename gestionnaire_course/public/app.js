@@ -204,7 +204,22 @@ function renderMeals() {
     list.innerHTML = '<p class="list-empty">Aucun repas. Cliquez sur "+ Nouveau repas" pour en creer un.</p>';
     return;
   }
-  list.innerHTML = [...meals].sort((a, b) => a.nom.localeCompare(b.nom, 'fr')).map(meal => {
+  const query = (document.getElementById('meals-search')?.value || '').toLowerCase().trim();
+  const filtered = [...meals]
+    .sort((a, b) => a.nom.localeCompare(b.nom, 'fr'))
+    .filter(meal => {
+      if (!query) return true;
+      if (meal.nom.toLowerCase().includes(query)) return true;
+      return meal.ingredients.some(id => {
+        const ing = ingredients.find(i => i.id === id);
+        return ing && ing.nom.toLowerCase().includes(query);
+      });
+    });
+  if (!filtered.length) {
+    list.innerHTML = '<p class="list-empty">Aucun repas ne correspond à la recherche.</p>';
+    return;
+  }
+  list.innerHTML = filtered.map(meal => {
     const ingNames = meal.ingredients.map(id => {
       const ing = ingredients.find(i => i.id === id);
       return ing ? escHtml(ing.nom) : '<em>supprime</em>';

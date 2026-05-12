@@ -1,5 +1,5 @@
 name: "Gestionnaire de Courses"
-version: "1.0.4"
+version: "1.0.5"
 slug: "gestionnaire_course"
 description: "Gestionnaire de liste de courses et de repas avec planification de menus."
 url: "https://github.com/your-username/gestionnaire-course"

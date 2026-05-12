@@ -57,7 +57,10 @@
   <div id="tab-meals" class="tab-content">
     <div class="card form-card">
       <h2>Ajouter un repas</h2>
-      <button class="btn-primary" onclick="openMealModal(null)">+ Nouveau repas</button>
+      <div class="form-row">
+        <input type="search" id="meals-search" placeholder="Rechercher un repas..." oninput="renderMeals()">
+        <button class="btn-primary" onclick="openMealModal(null)">+ Nouveau repas</button>
+      </div>
     </div>
     <div class="card">
       <div id="meals-list"></div>
