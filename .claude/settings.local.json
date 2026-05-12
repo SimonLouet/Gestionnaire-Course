@@ -28,7 +28,8 @@
       "Bash(Sort-Object FullName)",
       "Bash(Get-ChildItem -Recurse -Force)",
       "Bash(Select-Object FullName)",
-      "PowerShell(head -100)"
+      "PowerShell(head -100)",
+      "Bash(git mv *)"
     ]
   }
 }
