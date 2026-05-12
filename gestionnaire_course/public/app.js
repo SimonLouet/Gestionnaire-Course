@@ -82,7 +82,7 @@ function groupByCategory(items) {
     if (a && !b) return -1;
     return a.localeCompare(b, 'fr');
   });
-  return keys.map(k => [k, map[k]]);
+  return keys.map(k => [k, map[k].sort((a, b) => a.nom.localeCompare(b.nom, 'fr'))]);
 }
 
 function categoryHeader(cat) {
@@ -315,7 +315,7 @@ function renderMenu() {
     list.innerHTML = '<p class="list-empty">Aucun repas au menu. Ajoutez des repas depuis l\'onglet Repas.</p>';
     return;
   }
-  list.innerHTML = currentMeals.map(entry => {
+  list.innerHTML = [...currentMeals].sort((a, b) => a.nom.localeCompare(b.nom, 'fr')).map(entry => {
     const meal = meals.find(m => m.id === entry.repasId);
     const chips = meal
       ? meal.ingredients.map(id => {
