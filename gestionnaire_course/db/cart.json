@@ -1,28 +1,93 @@
 [
   {
     "id": 1,
-    "ingredientId": 23,
-    "nom": "Carrotte",
-    "categorie": "Légume/Fruit",
+    "ingredientId": 19,
+    "nom": "Pain de mie",
+    "categorie": "Épicerie salée",
+    "unite": "tranche",
+    "achete": false,
+    "source": "Menu",
+    "recettes": [
+      "Croque monsieur"
+    ],
+    "quantite": 3
+  },
+  {
+    "id": 2,
+    "ingredientId": 22,
+    "nom": "Fromage croque monsieur",
+    "categorie": "Produit laitier",
+    "unite": "tranche",
+    "achete": false,
+    "source": "Menu",
+    "recettes": [
+      "Croque monsieur"
+    ],
+    "quantite": 3
+  },
+  {
+    "id": 3,
+    "ingredientId": 21,
+    "nom": "Grullière",
+    "categorie": "Produit laitier",
+    "unite": "g",
+    "achete": false,
+    "source": "Menu",
+    "recettes": [
+      "Croque monsieur"
+    ],
+    "quantite": 3
+  },
+  {
+    "id": 4,
+    "ingredientId": 2,
+    "nom": "Pot de crème",
+    "categorie": "Produit laitier",
     "unite": "unité",
     "achete": true,
     "source": "Menu",
     "recettes": [
-      "Carrottes vichy - oeuf au plat"
+      "Croque monsieur"
     ],
-    "quantite": 6
+    "quantite": 1
   },
   {
-    "id": 2,
-    "ingredientId": 9,
-    "nom": "Oeuf",
+    "id": 5,
+    "ingredientId": 20,
+    "nom": "Jambon",
     "categorie": "Viande",
     "unite": "",
+    "achete": false,
+    "source": "Menu",
+    "recettes": [
+      "Croque monsieur"
+    ],
+    "quantite": 3
+  },
+  {
+    "id": 6,
+    "ingredientId": 2,
+    "nom": "Pot de crème",
+    "categorie": "Produit laitier",
+    "unite": "unité",
     "achete": true,
     "source": "Menu",
     "recettes": [
-      "Carrottes vichy - oeuf au plat"
+      "Croque monsieur"
     ],
-    "quantite": 6
+    "quantite": 1
+  },
+  {
+    "id": 7,
+    "ingredientId": 2,
+    "nom": "Pot de crème",
+    "categorie": "Produit laitier",
+    "unite": "unité",
+    "achete": true,
+    "source": "Menu",
+    "recettes": [
+      "Croque monsieur"
+    ],
+    "quantite": 0.1
   }
 ]

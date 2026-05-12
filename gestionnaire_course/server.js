@@ -33,7 +33,7 @@ function parseBody(req) {
 
 function normalizeIngredients(ings) {
   return (ings || []).map(e =>
-    typeof e === 'number' ? { id: e, quantite: 1 } : { id: e.id, quantite: Math.max(1, parseInt(e.quantite) || 1) }
+    typeof e === 'number' ? { id: e, quantite: 1 } : { id: e.id, quantite: Math.max(0.1, parseFloat(e.quantite) || 1) }
   );
 }
 
@@ -122,13 +122,10 @@ const server = http.createServer(async (req, res) => {
         items[idx].lien = body.lien !== undefined ? (body.lien || '') : (items[idx].lien || '');
         items[idx].unite = body.unite !== undefined ? (body.unite || '') : (items[idx].unite || '');
         writeDB('ingredients', items);
-        // Sync nom, catégorie et unité dans panier et stock
+        // Sync nom, catégorie et unité dans panier (le stock lit directement depuis ingredients)
         const cart = readDB('cart');
         cart.forEach(c => { if (c.ingredientId === id) { c.nom = items[idx].nom; c.categorie = items[idx].categorie; c.unite = items[idx].unite; } });
         writeDB('cart', cart);
-        const stock = readDB('stock');
-        stock.forEach(s => { if (s.ingredientId === id) { s.nom = items[idx].nom; s.categorie = items[idx].categorie; } });
-        writeDB('stock', stock);
         sendJSON(res, items[idx]);
 
       } else if (method === 'DELETE' && id) {
@@ -146,7 +143,7 @@ const server = http.createServer(async (req, res) => {
         const body = await parseBody(req);
         if (!body.nom || !body.nom.trim()) return sendJSON(res, { error: 'Nom requis' }, 400);
         const items = readDB('meals');
-        const item = { id: nextId(items), nom: body.nom.trim(), ingredients: normalizeIngredients(body.ingredients) };
+        const item = { id: nextId(items), nom: body.nom.trim(), portions: Math.max(1, parseInt(body.portions) || 2), ingredients: normalizeIngredients(body.ingredients) };
         items.push(item);
         writeDB('meals', items);
         sendJSON(res, item, 201);
@@ -157,6 +154,7 @@ const server = http.createServer(async (req, res) => {
         const idx = items.findIndex(i => i.id === id);
         if (idx === -1) return sendNotFound(res);
         items[idx].nom = body.nom.trim();
+        items[idx].portions = Math.max(1, parseInt(body.portions) || items[idx].portions || 2);
         items[idx].ingredients = normalizeIngredients(body.ingredients);
         writeDB('meals', items);
         sendJSON(res, items[idx]);
@@ -170,7 +168,13 @@ const server = http.createServer(async (req, res) => {
     // ---- MENU EN COURS ----
     } else if (resource === 'current-meals') {
       if (method === 'GET') {
-        sendJSON(res, readDB('current_meals'));
+        const currentMealsData = readDB('current_meals');
+        const mealsData = readDB('meals');
+        const enrichedMeals = currentMealsData.map(c => {
+          const meal = mealsData.find(m => m.id === c.repasId);
+          return { ...c, nom: meal ? meal.nom : '(supprimé)' };
+        });
+        sendJSON(res, enrichedMeals);
 
       } else if (method === 'POST') {
         const body = await parseBody(req);
@@ -179,7 +183,9 @@ const server = http.createServer(async (req, res) => {
         if (!meal) return sendNotFound(res);
 
         const currentMeals = readDB('current_meals');
-        const newEntry = { id: nextId(currentMeals), repasId: meal.id, nom: meal.nom };
+        const personnes = Math.max(1, parseInt(body.personnes) || (meal.portions || 2));
+        const multiplier = personnes / (meal.portions || 2);
+        const newEntry = { id: nextId(currentMeals), repasId: meal.id, personnes };
         currentMeals.push(newEntry);
         writeDB('current_meals', currentMeals);
 
@@ -192,7 +198,8 @@ const server = http.createServer(async (req, res) => {
         const cart = readDB('cart');
         for (const entry of meal.ingredients) {
           const ingId = typeof entry === 'number' ? entry : entry.id;
-          const ingQty = typeof entry === 'number' ? 1 : (entry.quantite || 1);
+          const baseQty = typeof entry === 'number' ? 1 : (entry.quantite || 1);
+          const ingQty = Math.max(0.1, Math.round(baseQty * multiplier * 10) / 10);
           const existing = cart.find(c => c.ingredientId === ingId && !c.achete);
           if (existing) {
             existing.quantite = (existing.quantite || 1) + ingQty;
@@ -216,7 +223,7 @@ const server = http.createServer(async (req, res) => {
           }
         }
         writeDB('cart', cart);
-        sendJSON(res, newEntry, 201);
+        sendJSON(res, { ...newEntry, nom: meal.nom }, 201);
 
       } else if (method === 'DELETE' && id) {
         const currentMeals = readDB('current_meals');
@@ -265,7 +272,7 @@ const server = http.createServer(async (req, res) => {
           unite: match ? (match.unite || '') : '',
           achete: false,
           source: 'Manuel',
-          quantite: Math.max(1, parseInt(body.quantite) || 1),
+          quantite: Math.max(0.1, parseFloat(body.quantite) || 1),
         };
         cart.push(item);
         writeDB('cart', cart);
@@ -280,7 +287,7 @@ const server = http.createServer(async (req, res) => {
         if (idx === -1) return sendNotFound(res);
 
         if (body.quantite !== undefined) {
-          cart[idx].quantite = Math.max(1, parseInt(body.quantite) || 1);
+          cart[idx].quantite = Math.max(0.1, parseFloat(body.quantite) || 0.1);
         }
 
         if (body.achete === true) {
@@ -295,8 +302,6 @@ const server = http.createServer(async (req, res) => {
               stock.push({
                 id: nextId(stock),
                 ingredientId: cart[idx].ingredientId,
-                nom: cart[idx].nom,
-                categorie: cart[idx].categorie || '',
                 quantite: qty,
               });
             }
@@ -305,7 +310,6 @@ const server = http.createServer(async (req, res) => {
               id: nextId(stock),
               ingredientId: null,
               nom: cart[idx].nom,
-              categorie: '',
               quantite: qty,
             });
           }
@@ -322,10 +326,21 @@ const server = http.createServer(async (req, res) => {
       }
 
     // ---- STOCK ----
-    // Modèle : { id, ingredientId, nom, categorie, quantite }
+    // Modèle stocké : { id, ingredientId, quantite } — nom/categorie/unite lus depuis ingredients
     } else if (resource === 'stock') {
       if (method === 'GET') {
-        sendJSON(res, readDB('stock'));
+        const stockItems = readDB('stock');
+        const allIngredients = readDB('ingredients');
+        const enriched = stockItems.map(s => {
+          if (s.ingredientId) {
+            const ing = allIngredients.find(i => i.id === s.ingredientId);
+            return ing
+              ? { ...s, nom: ing.nom, categorie: ing.categorie || '', unite: ing.unite || '' }
+              : { ...s, nom: s.nom || '(supprimé)', categorie: '', unite: '' };
+          }
+          return { ...s, categorie: s.categorie || '', unite: s.unite || '' };
+        });
+        sendJSON(res, enriched);
 
       } else if (method === 'PUT' && id) {
         // Modifier la quantité ; si quantite <= 0, supprime l'entrée
@@ -334,7 +349,7 @@ const server = http.createServer(async (req, res) => {
         const idx = stock.findIndex(s => s.id === id);
         if (idx === -1) return sendNotFound(res);
         if (body.quantite !== undefined) {
-          const newQty = Math.max(0, parseInt(body.quantite) || 0);
+          const newQty = Math.max(0, parseFloat(body.quantite) || 0);
           if (newQty === 0) {
             writeDB('stock', stock.filter(s => s.id !== id));
             return sendJSON(res, { removed: true });

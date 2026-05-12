@@ -78,6 +78,10 @@ function fmtQty(quantite, unite) {
   return `${q} ${u}`;
 }
 
+function parseQty(val) {
+  return parseFloat(String(val).replace(',', '.'));
+}
+
 function groupByCategory(items) {
   const map = {};
   items.forEach(item => {
@@ -244,12 +248,12 @@ function renderMeals() {
     return `
       <div class="meal-card">
         <div class="meal-info">
-          <div class="meal-name">${escHtml(meal.nom)}</div>
+          <div class="meal-name">${escHtml(meal.nom)} <span class="meal-portions-badge">${meal.portions || 2} pers.</span></div>
           <div class="meal-ings">${ingNames || '<em>Aucun ingredient</em>'}</div>
           ${meal.dernierAjout ? `<div class="meal-last-added">Dernier ajout : ${formatDate(meal.dernierAjout)}</div>` : ''}
         </div>
         <div class="meal-actions">
-          <button class="btn-menu" onclick="addMealToMenu(${meal.id}, this)">+ Menu</button>
+          <button class="btn-menu" onclick="openPersonnesModal(${meal.id}, this)">+ Menu</button>
           <button class="btn-icon" onclick="openMealModal(${meal.id})" title="Modifier">&#9998;</button>
           <button class="btn-icon danger" onclick="deleteMeal(${meal.id})" title="Supprimer">&#128465;</button>
         </div>
@@ -261,41 +265,68 @@ function openMealModal(mealId) {
   editingMealId = mealId;
   const modal = document.getElementById('meal-modal');
   document.getElementById('modal-title').textContent = mealId ? 'Modifier le repas' : 'Nouveau repas';
-  document.getElementById('modal-meal-name').value = mealId ? meals.find(m => m.id === mealId).nom : '';
+  const foundMeal = mealId ? meals.find(m => m.id === mealId) : null;
+  document.getElementById('modal-meal-name').value = foundMeal ? foundMeal.nom : '';
+  document.getElementById('modal-meal-portions').value = foundMeal ? (foundMeal.portions || 2) : 2;
 
-  const ingGrid = document.getElementById('modal-ingredients');
+  const ingSearch = document.getElementById('modal-ing-search');
+  if (ingSearch) ingSearch.value = '';
+
+  const ingList = document.getElementById('modal-ingredients');
   const noIng = document.getElementById('modal-no-ing');
   if (!ingredients.length) {
-    ingGrid.innerHTML = '';
+    ingList.innerHTML = '';
     noIng.style.display = 'block';
   } else {
     noIng.style.display = 'none';
     const selectedEntries = (mealId ? (meals.find(m => m.id === mealId)?.ingredients || []) : []).map(e => ingEntry(e));
     const selectedMap = Object.fromEntries(selectedEntries.map(e => [e.id, e.quantite]));
-    // Grouper les ingrédients par catégorie dans la modale
     const groups = groupByCategory(ingredients);
-    ingGrid.innerHTML = groups.map(([cat, items]) => `
-      ${cat ? `<div class="modal-cat-header">${escHtml(cat)}</div>` : ''}
-      ${items.map(ing => {
+    ingList.innerHTML = groups.map(([cat, items]) =>
+      (cat ? `<div class="modal-cat-header">${escHtml(cat)}</div>` : '') +
+      items.map(ing => {
         const checked = ing.id in selectedMap;
         const qty = selectedMap[ing.id] || 1;
-        return `<label class="ing-checkbox-label ${checked ? 'checked' : ''}" id="lbl-${ing.id}">
-          <input type="checkbox" value="${ing.id}" ${checked ? 'checked' : ''} onchange="toggleCheckLabel(this)">
-          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(ing.nom)}</span>
-          <input type="number" class="ing-qty-input" id="qty-${ing.id}" min="1" value="${qty}" ${!checked ? 'style="display:none"' : ''} onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">
-        </label>`;
-      }).join('')}
-    `).join('');
+        return `<div class="ing-modal-row${checked ? ' checked' : ''}" id="ing-row-modal-${ing.id}" data-ing-id="${ing.id}" data-name="${escAttr(ing.nom)}" onclick="toggleIngRow(${ing.id})">
+          <div class="ing-modal-check">${checked ? '&#10003;' : ''}</div>
+          <div class="ing-modal-name">${escHtml(ing.nom)}${ing.unite ? ` <span class="ing-modal-unite">${escHtml(ing.unite)}</span>` : ''}</div>
+          <div class="ing-modal-qty" id="qty-wrap-${ing.id}"${!checked ? ' style="display:none"' : ''}>
+            <input type="number" id="qty-${ing.id}" min="0.1" step="any" value="${qty}" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">
+            ${ing.unite ? `<span class="ing-modal-unite">${escHtml(ing.unite)}</span>` : ''}
+          </div>
+        </div>`;
+      }).join('')
+    ).join('');
+    updateModalIngCount();
   }
 
   modal.style.display = 'flex';
   document.getElementById('modal-meal-name').focus();
 }
 
-function toggleCheckLabel(checkbox) {
-  document.getElementById(`lbl-${checkbox.value}`).classList.toggle('checked', checkbox.checked);
-  const qtyInput = document.getElementById(`qty-${checkbox.value}`);
-  if (qtyInput) qtyInput.style.display = checkbox.checked ? '' : 'none';
+function toggleIngRow(ingId) {
+  const row = document.getElementById(`ing-row-modal-${ingId}`);
+  if (!row) return;
+  const isChecked = row.classList.toggle('checked');
+  const check = row.querySelector('.ing-modal-check');
+  if (check) check.innerHTML = isChecked ? '&#10003;' : '';
+  const qtyWrap = document.getElementById(`qty-wrap-${ingId}`);
+  if (qtyWrap) qtyWrap.style.display = isChecked ? '' : 'none';
+  updateModalIngCount();
+}
+
+function updateModalIngCount() {
+  const count = document.querySelectorAll('#modal-ingredients .ing-modal-row.checked').length;
+  const el = document.getElementById('modal-ing-count');
+  if (el) el.textContent = count > 0 ? count : '';
+}
+
+function filterModalIngredients() {
+  const q = (document.getElementById('modal-ing-search')?.value || '').toLowerCase().trim();
+  document.querySelectorAll('#modal-ingredients .ing-modal-row').forEach(row => {
+    const name = (row.dataset.name || '').toLowerCase();
+    row.style.display = (!q || name.includes(q)) ? '' : 'none';
+  });
 }
 
 function closeMealModal() {
@@ -306,16 +337,18 @@ function closeMealModal() {
 async function saveMeal() {
   const nom = document.getElementById('modal-meal-name').value.trim();
   if (!nom) return document.getElementById('modal-meal-name').focus();
-  const ingData = [...document.querySelectorAll('#modal-ingredients input[type="checkbox"]:checked')].map(c => {
-    const qtyInput = document.getElementById(`qty-${c.value}`);
-    return { id: parseInt(c.value), quantite: Math.max(1, parseInt(qtyInput?.value) || 1) };
+  const portions = Math.max(1, parseInt(document.getElementById('modal-meal-portions').value) || 2);
+  const ingData = [...document.querySelectorAll('#modal-ingredients .ing-modal-row.checked')].map(row => {
+    const ingId = parseInt(row.dataset.ingId);
+    const qtyInput = document.getElementById(`qty-${ingId}`);
+    return { id: ingId, quantite: Math.max(0.1, parseQty(qtyInput?.value) || 1) };
   });
   let meal;
   if (editingMealId) {
-    meal = await api.put(`/api/meals/${editingMealId}`, { nom, ingredients: ingData });
+    meal = await api.put(`/api/meals/${editingMealId}`, { nom, portions, ingredients: ingData });
     meals[meals.findIndex(m => m.id === editingMealId)] = meal;
   } else {
-    meal = await api.post('/api/meals', { nom, ingredients: ingData });
+    meal = await api.post('/api/meals', { nom, portions, ingredients: ingData });
     meals.push(meal);
   }
   closeMealModal();
@@ -335,17 +368,51 @@ function formatDate(isoStr) {
   return new Date(isoStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-async function addMealToMenu(mealId, btn) {
-  const entry = await api.post('/api/current-meals', { repasId: mealId });
+let personnesMealId = null;
+let personnesBtn = null;
+
+function openPersonnesModal(mealId, btn) {
+  const meal = meals.find(m => m.id === mealId);
+  if (!meal) return;
+  personnesMealId = mealId;
+  personnesBtn = btn;
+  document.getElementById('menu-persons-title').textContent = meal.nom;
+  document.getElementById('menu-persons-base').textContent = `Recette prévue pour ${meal.portions || 2} personne(s)`;
+  const qtyInput = document.getElementById('menu-persons-qty');
+  qtyInput.value = meal.portions || 2;
+  document.getElementById('menu-persons-modal').style.display = 'flex';
+  qtyInput.focus();
+  qtyInput.select();
+}
+
+function closePersonnesModal() {
+  document.getElementById('menu-persons-modal').style.display = 'none';
+  personnesMealId = null;
+  personnesBtn = null;
+}
+
+async function confirmAddToMenu() {
+  if (!personnesMealId) return;
+  const personnes = Math.max(1, parseInt(document.getElementById('menu-persons-qty').value) || 1);
+  const mealId = personnesMealId;
+  const btn = personnesBtn;
+  closePersonnesModal();
+  await addMealToMenu(mealId, btn, personnes);
+}
+
+async function addMealToMenu(mealId, btn, personnes) {
+  const entry = await api.post('/api/current-meals', { repasId: mealId, personnes });
   if (entry.error) return alert(entry.error);
   currentMeals.push(entry);
   meals = await api.get('/api/meals');
   cart = await api.get('/api/cart');
   updateBadges();
-  const orig = btn.textContent;
-  btn.textContent = '✓ Ajoute';
-  btn.disabled = true;
-  setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1200);
+  if (btn) {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Ajoute';
+    btn.disabled = true;
+    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1200);
+  }
 }
 
 // === MENU EN COURS ===
@@ -368,7 +435,7 @@ function renderMenu() {
     return `
       <div class="menu-card">
         <div class="menu-card-header">
-          <h3>${escHtml(entry.nom)}</h3>
+          <h3>${escHtml(entry.nom)} <span class="meal-portions-badge">${entry.personnes || 2} pers.</span></h3>
           <button class="btn-success" onclick="doneMeal(${entry.id})">&#10003; Repas fait</button>
         </div>
         <div class="menu-ings">${chips || '<em>Aucun ingredient</em>'}</div>
@@ -430,15 +497,41 @@ function cartRowHtml(item) {
   const recettesHtml = item.recettes && item.recettes.length
     ? `<div class="cart-recettes">${item.recettes.map(r => `<span class="recette-tag">${escHtml(r)}</span>`).join('')}</div>`
     : `<div class="cart-source">${escHtml(item.source)}</div>`;
+  const stockItem = item.ingredientId ? stock.find(s => s.ingredientId === item.ingredientId) : null;
+  const stockQty = stockItem ? stockItem.quantite : 0;
+  const u = (item.unite || '').trim();
+  const fmtU = q => (u && u !== 'unité') ? `${q} ${u}` : `${q}`;
+  let neededByMenu = 0;
+  if (item.ingredientId) {
+    for (const cm of currentMeals) {
+      const meal = meals.find(m => m.id === cm.repasId);
+      if (!meal) continue;
+      const e = meal.ingredients.find(e2 => ingEntry(e2).id === item.ingredientId);
+      if (!e) continue;
+      const multiplier = (cm.personnes || meal.portions || 2) / (meal.portions || 2);
+      neededByMenu += ingEntry(e).quantite * multiplier;
+    }
+    neededByMenu = Math.round(neededByMenu * 10) / 10;
+  }
+  const availableQty = Math.max(0, Math.round((stockQty - neededByMenu) * 10) / 10);
+  const deficit = Math.max(0, Math.round((neededByMenu - stockQty) * 10) / 10);
+  const stockColorClass = deficit > 0 ? ' cart-stock-low' : availableQty > 0 ? ' cart-stock-ok' : '';
+  const stockHtml = item.ingredientId
+    ? `<div class="cart-stock-info${stockColorClass}">${deficit > 0 ? `En stock : manque ${fmtU(deficit)}` : `En stock : ${fmtU(availableQty)} disponible`}</div>`
+    : '';
   return `
     <div class="cart-row" id="cart-row-${item.id}">
       <div style="flex:1">
         <div class="cart-name">${escHtml(item.nom)}</div>
         ${recettesHtml}
+        ${stockHtml}
       </div>
       <div class="qty-control">
         <button class="btn-qty" onclick="updateCartQty(${item.id}, ${qty - 1})">&#8722;</button>
-        <span class="qty-value">${qty}</span>${item.unite ? `<span class="qty-unite">${escHtml(item.unite)}</span>` : ''}
+        <input type="number" class="qty-value" value="${qty}" min="0.1" step="any"
+          onchange="updateCartQty(${item.id}, parseQty(this.value)||0)"
+          onkeydown="if(event.key==='Enter')this.blur()">
+        ${item.unite ? `<span class="qty-unite">${escHtml(item.unite)}</span>` : ''}
         <button class="btn-qty" onclick="updateCartQty(${item.id}, ${qty + 1})">+</button>
       </div>
       <div class="cart-actions">
@@ -449,7 +542,7 @@ function cartRowHtml(item) {
 }
 
 async function updateCartQty(id, newQty) {
-  if (newQty < 1) {
+  if (newQty <= 0) {
     if (!confirm('Retirer cet article du panier ?')) return;
     return deleteCartItem(id);
   }
@@ -493,7 +586,7 @@ function closeBuyModal() {
 
 async function confirmBuy() {
   if (!buyingCartItemId) return;
-  const qty = Math.max(1, parseInt(document.getElementById('buy-modal-qty').value) || 1);
+  const qty = Math.max(0.1, parseQty(document.getElementById('buy-modal-qty').value) || 0.1);
   const id = buyingCartItemId;
   closeBuyModal();
   await buyCartItem(id, qty);
@@ -536,12 +629,43 @@ function renderStock() {
   list.innerHTML = groups.map(([cat, items]) =>
     categoryHeader(cat) + items.map(item => {
       const qty = item.quantite || 1;
+      const linkedMeals = item.ingredientId
+        ? currentMeals
+            .filter(cm => {
+              const meal = meals.find(m => m.id === cm.repasId);
+              return meal && meal.ingredients.some(e => ingEntry(e).id === item.ingredientId);
+            })
+            .map(cm => cm.nom)
+        : [];
+      let neededQty = 0;
+      if (item.ingredientId) {
+        for (const cm of currentMeals) {
+          const meal = meals.find(m => m.id === cm.repasId);
+          if (!meal) continue;
+          const e = meal.ingredients.find(e2 => ingEntry(e2).id === item.ingredientId);
+          if (!e) continue;
+          const multiplier = (cm.personnes || meal.portions || 2) / (meal.portions || 2);
+          neededQty += ingEntry(e).quantite * multiplier;
+        }
+        neededQty = Math.round(neededQty * 10) / 10;
+      }
+      const deficit = Math.max(0, Math.round((neededQty - qty) * 10) / 10);
+      const freeQty = Math.max(0, Math.round((qty - neededQty) * 10) / 10);
+      const u = (item.unite || '').trim();
+      const fmtU = q => (u && u !== 'unité') ? `${q} ${u}` : `${q}`;
       return `
         <div class="stock-row">
-          <span class="stock-name">${escHtml(item.nom)}</span>
+          <div style="flex:1;min-width:0">
+            <span class="stock-name">${escHtml(item.nom)}</span>
+            ${linkedMeals.length ? `<div class="cart-recettes">${linkedMeals.map(n => `<span class="recette-tag">${escHtml(n)}</span>`).join('')}</div>` : ''}
+            ${neededQty > 0 ? `<div class="stock-free-qty${deficit > 0 ? ' stock-low' : ''}">${deficit > 0 ? `Manque ${fmtU(deficit)}` : `${fmtU(freeQty)} disponible`} · ${fmtU(neededQty)} au menu</div>` : ''}
+          </div>
           <div class="qty-control">
             <button class="btn-qty" onclick="updateStockQty(${item.id}, ${qty - 1})">&#8722;</button>
-            <span class="qty-value">${qty}</span>
+            <input type="number" class="qty-value" value="${qty}" min="0.1" step="any"
+              onchange="updateStockQty(${item.id}, parseQty(this.value)||0)"
+              onkeydown="if(event.key==='Enter')this.blur()">
+            ${item.unite ? `<span class="qty-unite">${escHtml(item.unite)}</span>` : ''}
             <button class="btn-qty" onclick="updateStockQty(${item.id}, ${qty + 1})">+</button>
           </div>
           <button class="btn-danger" onclick="deleteStockItem(${item.id})">Retirer tout</button>

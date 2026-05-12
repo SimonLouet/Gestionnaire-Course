@@ -272,6 +272,7 @@ main {
 .meal-card:last-child { border-bottom: none; }
 .meal-info { flex: 1; }
 .meal-info .meal-name { font-size: 1rem; font-weight: 600; }
+.meal-portions-badge { font-size: 0.72rem; font-weight: 400; color: var(--muted); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 1px 7px; vertical-align: middle; }
 .meal-info .meal-ings { font-size: 0.82rem; color: var(--text-light); margin-top: 3px; }
 .meal-info .meal-last-added { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
 .meal-actions { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -320,6 +321,9 @@ main {
 .cart-recettes { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
 .recette-tag { font-size: 0.72rem; background: #e0f0e8; color: #2d7a4f; border-radius: 10px; padding: 1px 8px; white-space: nowrap; }
 .cart-qty-badge { font-size: 0.72rem; color: var(--muted); padding: 1px 4px; align-self: center; }
+.cart-stock-info { font-size: 0.78rem; color: var(--muted); margin-top: 3px; }
+.cart-stock-info.cart-stock-ok { color: var(--success); }
+.cart-stock-info.cart-stock-low { color: var(--danger); }
 .cart-actions { display: flex; gap: 6px; }
 .cart-check { font-size: 1.1rem; color: var(--success); margin-right: 4px; }
 
@@ -340,7 +344,9 @@ main {
   gap: 8px;
 }
 .stock-row:last-child { border-bottom: none; }
-.stock-name { flex: 1; font-size: 0.95rem; }
+.stock-name { font-size: 0.95rem; }
+.stock-free-qty { font-size: 0.78rem; color: var(--muted); margin-top: 3px; }
+.stock-free-qty.stock-low { color: var(--danger); }
 
 /* === MODAL === */
 .modal-overlay {
@@ -358,8 +364,8 @@ main {
   background: white;
   border-radius: var(--radius);
   width: 100%;
-  max-width: 520px;
-  max-height: 80vh;
+  max-width: 680px;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 8px 32px rgba(0,0,0,0.18);
@@ -409,31 +415,27 @@ main {
   gap: 8px;
 }
 
-/* Ingredients grid in modal */
-.ingredients-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 8px;
-  max-height: 260px;
-  overflow-y: auto;
-  padding: 4px;
-}
-.ing-checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border: 1.5px solid var(--border);
-  border-radius: 7px;
-  cursor: pointer;
-  transition: all 0.12s;
-  font-size: 0.9rem;
-  user-select: none;
-}
-.ing-checkbox-label:hover { border-color: var(--primary); background: var(--primary-light); }
-.ing-checkbox-label input[type="checkbox"] { accent-color: var(--primary); }
-.ing-checkbox-label.checked { border-color: var(--primary); background: var(--primary-light); font-weight: 500; }
-.ing-qty-input { width: 42px; padding: 2px 4px; border: 1px solid var(--border); border-radius: 4px; text-align: center; font-size: 0.85rem; flex-shrink: 0; }
+/* Ingredients list in modal */
+.meal-modal-top { display: flex; gap: 16px; align-items: flex-end; margin-bottom: 16px; flex-wrap: wrap; }
+.meal-modal-ing-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+.meal-modal-ing-header label { margin-bottom: 0; }
+.modal-ing-count { font-size: 0.78rem; background: var(--primary-light); color: var(--primary); border-radius: 10px; padding: 1px 8px; margin-left: 4px; font-weight: 600; }
+.modal-ing-search-input { padding: 6px 10px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 0.9rem; outline: none; width: 170px; min-width: 0; color: var(--text); }
+.modal-ing-search-input:focus { border-color: var(--primary); }
+.ingredients-list { overflow-y: auto; max-height: 380px; border: 1.5px solid var(--border); border-radius: 8px; }
+.ing-modal-row { display: flex; align-items: center; min-height: 44px; padding: 6px 12px; border-bottom: 1px solid var(--border); gap: 10px; cursor: pointer; transition: background 0.12s; user-select: none; }
+.ing-modal-row:last-child { border-bottom: none; }
+.ing-modal-row:hover { background: var(--bg); }
+.ing-modal-row.checked { background: var(--primary-light); }
+.ing-modal-check { width: 20px; height: 20px; border: 2px solid var(--border); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; line-height: 1; transition: all 0.12s; color: white; }
+.ing-modal-row.checked .ing-modal-check { background: var(--primary); border-color: var(--primary); }
+.ing-modal-name { flex: 1; font-size: 0.95rem; min-width: 0; }
+.ing-modal-qty { display: flex; align-items: center; gap: 6px; }
+.ing-modal-qty input { width: 60px; padding: 4px 6px; border: 1.5px solid var(--border); border-radius: 5px; font-size: 0.9rem; text-align: center; outline: none; -moz-appearance: textfield; }
+.ing-modal-qty input:focus { border-color: var(--primary); }
+.ing-modal-qty input::-webkit-outer-spin-button,
+.ing-modal-qty input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.ing-modal-unite { font-size: 0.72rem; color: var(--muted); font-weight: 400; }
 .meal-ing-qty { font-size: 0.78rem; color: var(--muted); }
 
 /* Misc */
@@ -465,15 +467,14 @@ h3 { font-size: 1rem; color: var(--text); margin-bottom: 10px; }
 
 /* Modal category header */
 .modal-cat-header {
-  grid-column: 1 / -1;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.6px;
   color: var(--primary);
-  padding: 4px 2px 2px;
+  padding: 6px 12px 4px;
+  background: var(--bg);
   border-bottom: 1px solid var(--border);
-  margin-top: 4px;
 }
 
 /* === QUANTITY CONTROLS === */
@@ -501,11 +502,19 @@ h3 { font-size: 1rem; color: var(--text); margin-bottom: 10px; }
 }
 .btn-qty:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
 .qty-value {
-  min-width: 26px;
+  width: 44px;
   text-align: center;
   font-weight: 700;
   font-size: 0.95rem;
+  border: 1.5px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  padding: 2px 2px;
+  -moz-appearance: textfield;
 }
+.qty-value:focus { border-color: var(--primary); outline: none; background: white; }
+.qty-value::-webkit-outer-spin-button,
+.qty-value::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .qty-unite { font-size: 0.78rem; color: var(--muted); margin-left: -4px; }
 
 /* === INGREDIENT FORM === */

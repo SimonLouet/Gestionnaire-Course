@@ -1,102 +1,27 @@
 [
   {
     "id": 1,
-    "repasId": 4,
-    "nom": "Quiche lardon - salade - tomate"
+    "repasId": 9,
+    "personnes": 2
   },
   {
     "id": 2,
-    "repasId": 5,
-    "nom": "Quiche oignon - salade - tomate"
+    "repasId": 9,
+    "personnes": 2
   },
   {
     "id": 3,
-    "repasId": 1,
-    "nom": "Purée - knacki"
+    "repasId": 9,
+    "personnes": 2
   },
   {
     "id": 4,
-    "repasId": 2,
-    "nom": "Pate épinard crème - knacki"
+    "repasId": 9,
+    "personnes": 2
   },
   {
     "id": 5,
-    "repasId": 3,
-    "nom": "Semoule - ratatouille - poulet"
-  },
-  {
-    "id": 6,
-    "repasId": 6,
-    "nom": "Patate vapeur crème - Oeuf dur"
-  },
-  {
-    "id": 7,
-    "repasId": 7,
-    "nom": "Pate crème - cordon bleu"
-  },
-  {
-    "id": 8,
-    "repasId": 8,
-    "nom": "Patate à l'eau sauce aurore - Colin"
-  },
-  {
-    "id": 9,
     "repasId": 9,
-    "nom": "Croque monsieur"
-  },
-  {
-    "id": 11,
-    "repasId": 11,
-    "nom": "Frite - burger"
-  },
-  {
-    "id": 12,
-    "repasId": 3,
-    "nom": "Semoule - ratatouille - poulet"
-  },
-  {
-    "id": 13,
-    "repasId": 8,
-    "nom": "Patate à l'eau sauce aurore - Colin"
-  },
-  {
-    "id": 14,
-    "repasId": 10,
-    "nom": "Carrottes vichy - oeuf au plat"
-  },
-  {
-    "id": 15,
-    "repasId": 12,
-    "nom": "Purée épinard - oeuf au plat - tartine fromage"
-  },
-  {
-    "id": 16,
-    "repasId": 10,
-    "nom": "Carrottes vichy - oeuf au plat"
-  },
-  {
-    "id": 17,
-    "repasId": 10,
-    "nom": "Carrottes vichy - oeuf au plat"
-  },
-  {
-    "id": 18,
-    "repasId": 10,
-    "nom": "Carrottes vichy - oeuf au plat"
-  },
-  {
-    "id": 19,
-    "repasId": 10,
-    "nom": "Carrottes vichy - oeuf au plat"
-  },
-  {
-    "id": 20,
-    "repasId": 10,
-    "nom": "Carrottes vichy - oeuf au plat"
-  },
-  {
-    "id": 21,
-    "repasId": 10,
-    "nom": "Carrottes vichy - oeuf au plat"
+    "personnes": 2
   }
 ]

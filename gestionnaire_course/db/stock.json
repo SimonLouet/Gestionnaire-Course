@@ -1,16 +1,27 @@
 [
   {
-    "id": 1,
-    "ingredientId": 9,
-    "nom": "Oeuf",
-    "categorie": "Viande",
-    "quantite": 6
+    "id": 3,
+    "ingredientId": 19,
+    "quantite": 2
   },
   {
-    "id": 2,
-    "ingredientId": 23,
-    "nom": "Carrotte",
-    "categorie": "Légume/Fruit",
-    "quantite": 6
+    "id": 4,
+    "ingredientId": 22,
+    "quantite": 2
+  },
+  {
+    "id": 5,
+    "ingredientId": 21,
+    "quantite": 2
+  },
+  {
+    "id": 6,
+    "ingredientId": 2,
+    "quantite": 3.1
+  },
+  {
+    "id": 7,
+    "ingredientId": 20,
+    "quantite": 2
   }
 ]
