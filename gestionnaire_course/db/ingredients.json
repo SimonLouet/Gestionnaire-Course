@@ -7,15 +7,17 @@
   },
   {
     "id": 2,
-    "nom": "Creme",
+    "nom": "Pot de crème",
     "categorie": "Produit laitier",
-    "lien": ""
+    "lien": "",
+    "unite": "unité"
   },
   {
     "id": 3,
     "nom": "Pate épinard",
     "categorie": "Produit frais",
-    "lien": ""
+    "lien": "",
+    "unite": "g"
   },
   {
     "id": 4,
@@ -27,13 +29,15 @@
     "id": 5,
     "nom": "Semoule",
     "categorie": "Épicerie salée",
-    "lien": ""
+    "lien": "",
+    "unite": "g"
   },
   {
     "id": 6,
     "nom": "Ratatouille",
     "categorie": "Légume/Fruit",
-    "lien": ""
+    "lien": "",
+    "unite": "g"
   },
   {
     "id": 7,
@@ -45,7 +49,8 @@
     "id": 8,
     "nom": "Pate brisée",
     "categorie": "Produit frais",
-    "lien": ""
+    "lien": "",
+    "unite": "unité"
   },
   {
     "id": 9,
@@ -57,31 +62,36 @@
     "id": 10,
     "nom": "Salade",
     "categorie": "Légume/Fruit",
-    "lien": ""
+    "lien": "",
+    "unite": "g"
   },
   {
     "id": 11,
     "nom": "Tomate cerise",
     "categorie": "Légume/Fruit",
-    "lien": ""
+    "lien": "",
+    "unite": "g"
   },
   {
     "id": 12,
     "nom": "Purée mouseline",
     "categorie": "Épicerie salée",
-    "lien": ""
+    "lien": "",
+    "unite": "g"
   },
   {
     "id": 13,
     "nom": "Patate vapeur",
     "categorie": "Légume/Fruit",
-    "lien": ""
+    "lien": "",
+    "unite": "kg"
   },
   {
     "id": 14,
     "nom": "Patate frite",
     "categorie": "Légume/Fruit",
-    "lien": ""
+    "lien": "",
+    "unite": "kg"
   },
   {
     "id": 15,
@@ -93,7 +103,8 @@
     "id": 16,
     "nom": "Pate",
     "categorie": "Épicerie salée",
-    "lien": ""
+    "lien": "",
+    "unite": "g"
   },
   {
     "id": 17,
@@ -105,13 +116,15 @@
     "id": 18,
     "nom": "Concentré de tomate",
     "categorie": "Épicerie salée",
-    "lien": ""
+    "lien": "",
+    "unite": "unité"
   },
   {
     "id": 19,
     "nom": "Pain de mie",
     "categorie": "Épicerie salée",
-    "lien": ""
+    "lien": "",
+    "unite": "tranche"
   },
   {
     "id": 20,
@@ -123,31 +136,36 @@
     "id": 21,
     "nom": "Grullière",
     "categorie": "Produit laitier",
-    "lien": ""
+    "lien": "",
+    "unite": "g"
   },
   {
     "id": 22,
     "nom": "Fromage croque monsieur",
     "categorie": "Produit laitier",
-    "lien": ""
+    "lien": "",
+    "unite": "tranche"
   },
   {
     "id": 23,
     "nom": "Carrotte",
     "categorie": "Légume/Fruit",
-    "lien": ""
+    "lien": "",
+    "unite": "unité"
   },
   {
     "id": 24,
     "nom": "Pain à burger",
     "categorie": "Épicerie salée",
-    "lien": ""
+    "lien": "",
+    "unite": "unité"
   },
   {
     "id": 25,
     "nom": "Fromage à burger",
     "categorie": "Produit laitier",
-    "lien": ""
+    "lien": "",
+    "unite": "tranche"
   },
   {
     "id": 26,
@@ -159,30 +177,35 @@
     "id": 27,
     "nom": "Camenbert",
     "categorie": "Produit laitier",
-    "lien": ""
+    "lien": "",
+    "unite": "unité"
   },
   {
     "id": 28,
     "nom": "Fromage de chèvre",
     "categorie": "Produit laitier",
-    "lien": ""
+    "lien": "",
+    "unite": "unité"
   },
   {
     "id": 29,
     "nom": "Lait",
     "categorie": "Produit laitier",
-    "lien": ""
+    "lien": "",
+    "unite": "L"
   },
   {
     "id": 30,
     "nom": "Oignon",
     "categorie": "Légume/Fruit",
-    "lien": ""
+    "lien": "",
+    "unite": "unité"
   },
   {
     "id": 31,
     "nom": "Purée épinard",
     "categorie": "Produit frais",
-    "lien": ""
+    "lien": "",
+    "unite": "g"
   }
 ]

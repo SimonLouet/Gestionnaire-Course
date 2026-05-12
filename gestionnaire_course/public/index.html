@@ -41,6 +41,12 @@
           <input type="text" id="ing-name" placeholder="Nom *" onkeydown="if(event.key==='Enter')addIngredient()">
           <input type="text" id="ing-categorie" list="cat-datalist" placeholder="Categorie">
           <datalist id="cat-datalist"></datalist>
+          <input type="text" id="ing-unite" list="unite-datalist" placeholder="Unité (g, L…)" style="max-width:110px">
+          <datalist id="unite-datalist">
+            <option value="unité"><option value="g"><option value="kg">
+            <option value="L"><option value="ml"><option value="cl">
+            <option value="tranche"><option value="c.à.s"><option value="c.à.c"><option value="pincée">
+          </datalist>
         </div>
         <div class="form-row">
           <input type="text" id="ing-lien" placeholder="Lien Drive (optionnel)">
@@ -126,6 +132,28 @@
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeMealModal()">Annuler</button>
       <button class="btn-primary" onclick="saveMeal()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL ACHAT ===== -->
+<div id="buy-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeBuyModal()">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h2>Confirmer l'achat</h2>
+      <button class="btn-close" onclick="closeBuyModal()">x</button>
+    </div>
+    <div class="modal-body">
+      <p id="buy-modal-name" style="font-weight:600;margin-bottom:14px"></p>
+      <label>Quantité achetée</label>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <input type="number" id="buy-modal-qty" min="1" class="input-full" style="max-width:90px" onkeydown="if(event.key==='Enter')confirmBuy()">
+        <span id="buy-modal-unite" style="color:var(--muted);font-size:0.95rem;font-weight:500"></span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeBuyModal()">Annuler</button>
+      <button class="btn-success" onclick="confirmBuy()">&#10003; Confirmer</button>
     </div>
   </div>
 </div>

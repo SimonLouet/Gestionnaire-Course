@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": 1,
+    "ingredientId": 9,
+    "nom": "Oeuf",
+    "categorie": "Viande",
+    "quantite": 6
+  },
+  {
+    "id": 2,
+    "ingredientId": 23,
+    "nom": "Carrotte",
+    "categorie": "Légume/Fruit",
+    "quantite": 6
+  }
+]

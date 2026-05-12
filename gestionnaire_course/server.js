@@ -31,6 +31,12 @@ function parseBody(req) {
   });
 }
 
+function normalizeIngredients(ings) {
+  return (ings || []).map(e =>
+    typeof e === 'number' ? { id: e, quantite: 1 } : { id: e.id, quantite: Math.max(1, parseInt(e.quantite) || 1) }
+  );
+}
+
 function sendJSON(res, data, status = 200) {
   res.writeHead(status, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(data));
@@ -100,6 +106,7 @@ const server = http.createServer(async (req, res) => {
           nom: body.nom.trim(),
           categorie: body.categorie || '',
           lien: body.lien || '',
+          unite: body.unite || '',
         };
         items.push(item);
         writeDB('ingredients', items);
@@ -113,10 +120,11 @@ const server = http.createServer(async (req, res) => {
         items[idx].nom = body.nom.trim();
         items[idx].categorie = body.categorie !== undefined ? (body.categorie || '') : (items[idx].categorie || '');
         items[idx].lien = body.lien !== undefined ? (body.lien || '') : (items[idx].lien || '');
+        items[idx].unite = body.unite !== undefined ? (body.unite || '') : (items[idx].unite || '');
         writeDB('ingredients', items);
-        // Sync nom et catégorie dans panier et stock
+        // Sync nom, catégorie et unité dans panier et stock
         const cart = readDB('cart');
-        cart.forEach(c => { if (c.ingredientId === id) { c.nom = items[idx].nom; c.categorie = items[idx].categorie; } });
+        cart.forEach(c => { if (c.ingredientId === id) { c.nom = items[idx].nom; c.categorie = items[idx].categorie; c.unite = items[idx].unite; } });
         writeDB('cart', cart);
         const stock = readDB('stock');
         stock.forEach(s => { if (s.ingredientId === id) { s.nom = items[idx].nom; s.categorie = items[idx].categorie; } });
@@ -138,7 +146,7 @@ const server = http.createServer(async (req, res) => {
         const body = await parseBody(req);
         if (!body.nom || !body.nom.trim()) return sendJSON(res, { error: 'Nom requis' }, 400);
         const items = readDB('meals');
-        const item = { id: nextId(items), nom: body.nom.trim(), ingredients: body.ingredients || [] };
+        const item = { id: nextId(items), nom: body.nom.trim(), ingredients: normalizeIngredients(body.ingredients) };
         items.push(item);
         writeDB('meals', items);
         sendJSON(res, item, 201);
@@ -149,7 +157,7 @@ const server = http.createServer(async (req, res) => {
         const idx = items.findIndex(i => i.id === id);
         if (idx === -1) return sendNotFound(res);
         items[idx].nom = body.nom.trim();
-        items[idx].ingredients = body.ingredients || [];
+        items[idx].ingredients = normalizeIngredients(body.ingredients);
         writeDB('meals', items);
         sendJSON(res, items[idx]);
 
@@ -182,10 +190,12 @@ const server = http.createServer(async (req, res) => {
         // Ajouter les ingrédients au panier : incrémenter si déjà présent, sinon créer
         const allIngredients = readDB('ingredients');
         const cart = readDB('cart');
-        for (const ingId of meal.ingredients) {
+        for (const entry of meal.ingredients) {
+          const ingId = typeof entry === 'number' ? entry : entry.id;
+          const ingQty = typeof entry === 'number' ? 1 : (entry.quantite || 1);
           const existing = cart.find(c => c.ingredientId === ingId && !c.achete);
           if (existing) {
-            existing.quantite = (existing.quantite || 1) + 1;
+            existing.quantite = (existing.quantite || 1) + ingQty;
             if (!existing.recettes) existing.recettes = [];
             if (!existing.recettes.includes(meal.nom)) existing.recettes.push(meal.nom);
           } else {
@@ -196,10 +206,11 @@ const server = http.createServer(async (req, res) => {
                 ingredientId: ing.id,
                 nom: ing.nom,
                 categorie: ing.categorie || '',
+                unite: ing.unite || '',
                 achete: false,
                 source: 'Menu',
                 recettes: [meal.nom],
-                quantite: 1,
+                quantite: ingQty,
               });
             }
           }
@@ -217,12 +228,14 @@ const server = http.createServer(async (req, res) => {
         const meal = meals.find(m => m.id === entry.repasId);
         if (meal) {
           let stock = readDB('stock');
-          for (const ingId of meal.ingredients) {
+          for (const entry of meal.ingredients) {
+            const ingId = typeof entry === 'number' ? entry : entry.id;
+            const ingQty = typeof entry === 'number' ? 1 : (entry.quantite || 1);
             const sIdx = stock.findIndex(s => s.ingredientId === ingId);
             if (sIdx !== -1) {
               const qty = stock[sIdx].quantite || 1;
-              if (qty <= 1) stock.splice(sIdx, 1);
-              else stock[sIdx].quantite = qty - 1;
+              if (qty <= ingQty) stock.splice(sIdx, 1);
+              else stock[sIdx].quantite = qty - ingQty;
             }
           }
           writeDB('stock', stock);
@@ -249,6 +262,7 @@ const server = http.createServer(async (req, res) => {
           ingredientId: match ? match.id : null,
           nom: body.nom.trim(),
           categorie: match ? (match.categorie || '') : '',
+          unite: match ? (match.unite || '') : '',
           achete: false,
           source: 'Manuel',
           quantite: Math.max(1, parseInt(body.quantite) || 1),

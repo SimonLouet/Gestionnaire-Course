@@ -249,6 +249,7 @@ main {
 }
 .ing-row:last-child { border-bottom: none; }
 .ing-row .ing-name { flex: 1; font-size: 0.95rem; }
+.ing-unite-tag { font-size: 0.72rem; color: var(--primary); background: var(--primary-light); border-radius: 8px; padding: 1px 7px; white-space: nowrap; }
 .ing-row input.edit-input {
   flex: 1;
   padding: 5px 9px;
@@ -363,6 +364,7 @@ main {
   flex-direction: column;
   box-shadow: 0 8px 32px rgba(0,0,0,0.18);
 }
+.modal.modal-sm { max-width: 320px; }
 
 .modal-header {
   display: flex;
@@ -410,7 +412,7 @@ main {
 /* Ingredients grid in modal */
 .ingredients-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 8px;
   max-height: 260px;
   overflow-y: auto;
@@ -431,6 +433,8 @@ main {
 .ing-checkbox-label:hover { border-color: var(--primary); background: var(--primary-light); }
 .ing-checkbox-label input[type="checkbox"] { accent-color: var(--primary); }
 .ing-checkbox-label.checked { border-color: var(--primary); background: var(--primary-light); font-weight: 500; }
+.ing-qty-input { width: 42px; padding: 2px 4px; border: 1px solid var(--border); border-radius: 4px; text-align: center; font-size: 0.85rem; flex-shrink: 0; }
+.meal-ing-qty { font-size: 0.78rem; color: var(--muted); }
 
 /* Misc */
 .hint {
@@ -502,6 +506,7 @@ h3 { font-size: 1rem; color: var(--text); margin-bottom: 10px; }
   font-weight: 700;
   font-size: 0.95rem;
 }
+.qty-unite { font-size: 0.78rem; color: var(--muted); margin-left: -4px; }
 
 /* === INGREDIENT FORM === */
 .ing-add-form { display: flex; flex-direction: column; gap: 8px; }

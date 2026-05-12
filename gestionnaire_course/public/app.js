@@ -69,6 +69,14 @@ function escHtml(str) {
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 function escAttr(str) { return String(str ?? '').replace(/"/g, '&quot;'); }
+function ingEntry(e) { return typeof e === 'number' ? { id: e, quantite: 1 } : e; }
+
+function fmtQty(quantite, unite) {
+  const q = quantite || 1;
+  const u = (unite || '').trim();
+  if (!u || u === 'unité') return q > 1 ? `x${q}` : '';
+  return `${q} ${u}`;
+}
 
 function groupByCategory(items) {
   const map = {};
@@ -123,9 +131,11 @@ function ingRowHtml(ing) {
   const linkBtn = ing.lien
     ? `<a href="${escAttr(ing.lien)}" target="_blank" rel="noopener" class="ing-link" title="Voir sur Drive">&#128279;</a>`
     : '';
+  const uniteTag = ing.unite ? `<span class="ing-unite-tag">${escHtml(ing.unite)}</span>` : '';
   return `
     <div class="ing-row" id="ing-row-${ing.id}">
       <span class="ing-name">${escHtml(ing.nom)}</span>
+      ${uniteTag}
       ${linkBtn}
       <div class="ing-actions">
         <button class="btn-icon" onclick="editIngredient(${ing.id})" title="Modifier">&#9998;</button>
@@ -140,14 +150,16 @@ async function addIngredient() {
   const lienInput = document.getElementById('ing-lien');
   const nom = nameInput.value.trim();
   if (!nom) return nameInput.focus();
+  const uniteInput = document.getElementById('ing-unite');
   const ing = await api.post('/api/ingredients', {
     nom,
     categorie: catInput.value.trim(),
     lien: lienInput.value.trim(),
+    unite: uniteInput ? uniteInput.value.trim() : '',
   });
   if (ing.error) return alert(ing.error);
   ingredients.push(ing);
-  nameInput.value = ''; catInput.value = ''; lienInput.value = '';
+  nameInput.value = ''; catInput.value = ''; lienInput.value = ''; if (uniteInput) uniteInput.value = '';
   updateBadges();
   renderIngredients();
   updateCartDatalist();
@@ -163,6 +175,7 @@ function editIngredient(id) {
       <div style="display:flex; gap:6px; flex-wrap:wrap;">
         <input class="edit-input" id="ie-cat-${id}" value="${escAttr(ing.categorie||'')}" list="ie-catdl-${id}" placeholder="Categorie" style="flex:1; min-width:120px;">
         <datalist id="ie-catdl-${id}">${cats.map(c => `<option value="${escAttr(c)}">`).join('')}</datalist>
+        <input class="edit-input" id="ie-unite-${id}" value="${escAttr(ing.unite||'')}" list="unite-datalist" placeholder="Unité" style="flex:0 0 80px;">
         <input class="edit-input" id="ie-lien-${id}" value="${escAttr(ing.lien||'')}" placeholder="Lien Drive" style="flex:2; min-width:180px;">
       </div>
     </div>
@@ -177,8 +190,9 @@ async function saveIngredient(id) {
   const nom = document.getElementById(`ie-nom-${id}`).value.trim();
   const categorie = document.getElementById(`ie-cat-${id}`).value.trim();
   const lien = document.getElementById(`ie-lien-${id}`).value.trim();
+  const unite = (document.getElementById(`ie-unite-${id}`)?.value || '').trim();
   if (!nom) return document.getElementById(`ie-nom-${id}`).focus();
-  const updated = await api.put(`/api/ingredients/${id}`, { nom, categorie, lien });
+  const updated = await api.put(`/api/ingredients/${id}`, { nom, categorie, lien, unite });
   if (updated.error) return alert(updated.error);
   const idx = ingredients.findIndex(i => i.id === id);
   ingredients[idx] = updated;
@@ -210,8 +224,8 @@ function renderMeals() {
     .filter(meal => {
       if (!query) return true;
       if (meal.nom.toLowerCase().includes(query)) return true;
-      return meal.ingredients.some(id => {
-        const ing = ingredients.find(i => i.id === id);
+      return meal.ingredients.some(e => {
+        const ing = ingredients.find(i => i.id === ingEntry(e).id);
         return ing && ing.nom.toLowerCase().includes(query);
       });
     });
@@ -220,9 +234,12 @@ function renderMeals() {
     return;
   }
   list.innerHTML = filtered.map(meal => {
-    const ingNames = meal.ingredients.map(id => {
+    const ingNames = meal.ingredients.map(e => {
+      const { id, quantite } = ingEntry(e);
       const ing = ingredients.find(i => i.id === id);
-      return ing ? escHtml(ing.nom) : '<em>supprime</em>';
+      const name = ing ? escHtml(ing.nom) : '<em>supprime</em>';
+      const qty = fmtQty(quantite, ing?.unite);
+      return qty ? `${name} <span class="meal-ing-qty">${escHtml(qty)}</span>` : name;
     }).join(', ');
     return `
       <div class="meal-card">
@@ -253,16 +270,19 @@ function openMealModal(mealId) {
     noIng.style.display = 'block';
   } else {
     noIng.style.display = 'none';
-    const selected = mealId ? (meals.find(m => m.id === mealId)?.ingredients || []) : [];
+    const selectedEntries = (mealId ? (meals.find(m => m.id === mealId)?.ingredients || []) : []).map(e => ingEntry(e));
+    const selectedMap = Object.fromEntries(selectedEntries.map(e => [e.id, e.quantite]));
     // Grouper les ingrédients par catégorie dans la modale
     const groups = groupByCategory(ingredients);
     ingGrid.innerHTML = groups.map(([cat, items]) => `
       ${cat ? `<div class="modal-cat-header">${escHtml(cat)}</div>` : ''}
       ${items.map(ing => {
-        const checked = selected.includes(ing.id);
+        const checked = ing.id in selectedMap;
+        const qty = selectedMap[ing.id] || 1;
         return `<label class="ing-checkbox-label ${checked ? 'checked' : ''}" id="lbl-${ing.id}">
           <input type="checkbox" value="${ing.id}" ${checked ? 'checked' : ''} onchange="toggleCheckLabel(this)">
-          ${escHtml(ing.nom)}
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(ing.nom)}</span>
+          <input type="number" class="ing-qty-input" id="qty-${ing.id}" min="1" value="${qty}" ${!checked ? 'style="display:none"' : ''} onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">
         </label>`;
       }).join('')}
     `).join('');
@@ -274,6 +294,8 @@ function openMealModal(mealId) {
 
 function toggleCheckLabel(checkbox) {
   document.getElementById(`lbl-${checkbox.value}`).classList.toggle('checked', checkbox.checked);
+  const qtyInput = document.getElementById(`qty-${checkbox.value}`);
+  if (qtyInput) qtyInput.style.display = checkbox.checked ? '' : 'none';
 }
 
 function closeMealModal() {
@@ -284,13 +306,16 @@ function closeMealModal() {
 async function saveMeal() {
   const nom = document.getElementById('modal-meal-name').value.trim();
   if (!nom) return document.getElementById('modal-meal-name').focus();
-  const ingIds = [...document.querySelectorAll('#modal-ingredients input[type="checkbox"]:checked')].map(c => parseInt(c.value));
+  const ingData = [...document.querySelectorAll('#modal-ingredients input[type="checkbox"]:checked')].map(c => {
+    const qtyInput = document.getElementById(`qty-${c.value}`);
+    return { id: parseInt(c.value), quantite: Math.max(1, parseInt(qtyInput?.value) || 1) };
+  });
   let meal;
   if (editingMealId) {
-    meal = await api.put(`/api/meals/${editingMealId}`, { nom, ingredients: ingIds });
+    meal = await api.put(`/api/meals/${editingMealId}`, { nom, ingredients: ingData });
     meals[meals.findIndex(m => m.id === editingMealId)] = meal;
   } else {
-    meal = await api.post('/api/meals', { nom, ingredients: ingIds });
+    meal = await api.post('/api/meals', { nom, ingredients: ingData });
     meals.push(meal);
   }
   closeMealModal();
@@ -333,9 +358,11 @@ function renderMenu() {
   list.innerHTML = [...currentMeals].sort((a, b) => a.nom.localeCompare(b.nom, 'fr')).map(entry => {
     const meal = meals.find(m => m.id === entry.repasId);
     const chips = meal
-      ? meal.ingredients.map(id => {
+      ? meal.ingredients.map(e => {
+          const { id, quantite } = ingEntry(e);
           const ing = ingredients.find(i => i.id === id);
-          return `<span>${ing ? escHtml(ing.nom) : 'supprime'}</span>`;
+          const qty = fmtQty(quantite, ing?.unite);
+          return `<span>${ing ? escHtml(ing.nom) : 'supprime'}${qty ? ` ${escHtml(qty)}` : ''}</span>`;
         }).join('')
       : '';
     return `
@@ -411,11 +438,11 @@ function cartRowHtml(item) {
       </div>
       <div class="qty-control">
         <button class="btn-qty" onclick="updateCartQty(${item.id}, ${qty - 1})">&#8722;</button>
-        <span class="qty-value">${qty}</span>
+        <span class="qty-value">${qty}</span>${item.unite ? `<span class="qty-unite">${escHtml(item.unite)}</span>` : ''}
         <button class="btn-qty" onclick="updateCartQty(${item.id}, ${qty + 1})">+</button>
       </div>
       <div class="cart-actions">
-        <button class="btn-success" onclick="buyCartItem(${item.id})">&#10003; Achete</button>
+        <button class="btn-success" onclick="openBuyModal(${item.id})">&#10003; Achete</button>
         <button class="btn-icon danger" onclick="deleteCartItem(${item.id})" title="Retirer">&#128465;</button>
       </div>
     </div>`;
@@ -444,11 +471,40 @@ async function addToCart() {
   renderCart();
 }
 
-async function buyCartItem(id) {
-  const item = await api.put(`/api/cart/${id}`, { achete: true });
+let buyingCartItemId = null;
+
+function openBuyModal(id) {
+  const item = cart.find(c => c.id === id);
+  if (!item) return;
+  buyingCartItemId = id;
+  document.getElementById('buy-modal-name').textContent = item.nom;
+  const qtyInput = document.getElementById('buy-modal-qty');
+  qtyInput.value = item.quantite || 1;
+  document.getElementById('buy-modal-unite').textContent = item.unite || '';
+  document.getElementById('buy-modal').style.display = 'flex';
+  qtyInput.focus();
+  qtyInput.select();
+}
+
+function closeBuyModal() {
+  document.getElementById('buy-modal').style.display = 'none';
+  buyingCartItemId = null;
+}
+
+async function confirmBuy() {
+  if (!buyingCartItemId) return;
+  const qty = Math.max(1, parseInt(document.getElementById('buy-modal-qty').value) || 1);
+  const id = buyingCartItemId;
+  closeBuyModal();
+  await buyCartItem(id, qty);
+}
+
+async function buyCartItem(id, actualQty) {
+  const item = await api.put(`/api/cart/${id}`, { achete: true, quantite: actualQty });
   if (item.error) return alert(item.error);
   const idx = cart.findIndex(c => c.id === id);
   cart[idx].achete = true;
+  cart[idx].quantite = actualQty;
   stock = await api.get('/api/stock');
   updateBadges();
   renderCart();

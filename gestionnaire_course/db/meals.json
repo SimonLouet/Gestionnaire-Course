@@ -97,9 +97,16 @@
     "id": 10,
     "nom": "Carrottes vichy - oeuf au plat",
     "ingredients": [
-      23,
-      9
-    ]
+      {
+        "id": 23,
+        "quantite": 5
+      },
+      {
+        "id": 9,
+        "quantite": 1
+      }
+    ],
+    "dernierAjout": "2026-05-12"
   },
   {
     "id": 11,
