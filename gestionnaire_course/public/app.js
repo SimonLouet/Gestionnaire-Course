@@ -204,7 +204,7 @@ function renderMeals() {
     list.innerHTML = '<p class="list-empty">Aucun repas. Cliquez sur "+ Nouveau repas" pour en creer un.</p>';
     return;
   }
-  list.innerHTML = meals.map(meal => {
+  list.innerHTML = [...meals].sort((a, b) => a.nom.localeCompare(b.nom, 'fr')).map(meal => {
     const ingNames = meal.ingredients.map(id => {
       const ing = ingredients.find(i => i.id === id);
       return ing ? escHtml(ing.nom) : '<em>supprime</em>';
