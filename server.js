@@ -2,9 +2,9 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const DB_DIR = path.join(__dirname, 'db');
+const DB_DIR = path.join(process.env.DATA_PATH || __dirname, 'db');
 const PUBLIC_DIR = path.join(__dirname, 'public');
-const PORT = 3000;
+const PORT = parseInt(process.env.PORT) || 3000;
 
 // --- DB helpers ---
 function readDB(table) {
@@ -347,6 +347,6 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`Gestionnaire de courses démarré : http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Gestionnaire de courses démarré sur le port ${PORT}`);
 });
