@@ -1,0 +1,188 @@
+[
+  {
+    "id": 1,
+    "nom": "Lardon",
+    "categorie": "Viande",
+    "lien": ""
+  },
+  {
+    "id": 2,
+    "nom": "Creme",
+    "categorie": "Produit laitier",
+    "lien": ""
+  },
+  {
+    "id": 3,
+    "nom": "Pate épinard",
+    "categorie": "Produit frais",
+    "lien": ""
+  },
+  {
+    "id": 4,
+    "nom": "Knacki",
+    "categorie": "Viande",
+    "lien": ""
+  },
+  {
+    "id": 5,
+    "nom": "Semoule",
+    "categorie": "Épicerie salée",
+    "lien": ""
+  },
+  {
+    "id": 6,
+    "nom": "Ratatouille",
+    "categorie": "Légume/Fruit",
+    "lien": ""
+  },
+  {
+    "id": 7,
+    "nom": "Filet de poulet",
+    "categorie": "Viande",
+    "lien": ""
+  },
+  {
+    "id": 8,
+    "nom": "Pate brisée",
+    "categorie": "Produit frais",
+    "lien": ""
+  },
+  {
+    "id": 9,
+    "nom": "Oeuf",
+    "categorie": "Viande",
+    "lien": ""
+  },
+  {
+    "id": 10,
+    "nom": "Salade",
+    "categorie": "Légume/Fruit",
+    "lien": ""
+  },
+  {
+    "id": 11,
+    "nom": "Tomate cerise",
+    "categorie": "Légume/Fruit",
+    "lien": ""
+  },
+  {
+    "id": 12,
+    "nom": "Purée mouseline",
+    "categorie": "Épicerie salée",
+    "lien": ""
+  },
+  {
+    "id": 13,
+    "nom": "Patate vapeur",
+    "categorie": "Légume/Fruit",
+    "lien": ""
+  },
+  {
+    "id": 14,
+    "nom": "Patate frite",
+    "categorie": "Légume/Fruit",
+    "lien": ""
+  },
+  {
+    "id": 15,
+    "nom": "Cordon bleu",
+    "categorie": "Viande",
+    "lien": ""
+  },
+  {
+    "id": 16,
+    "nom": "Pate",
+    "categorie": "Épicerie salée",
+    "lien": ""
+  },
+  {
+    "id": 17,
+    "nom": "Colin",
+    "categorie": "Viande",
+    "lien": ""
+  },
+  {
+    "id": 18,
+    "nom": "Concentré de tomate",
+    "categorie": "Épicerie salée",
+    "lien": ""
+  },
+  {
+    "id": 19,
+    "nom": "Pain de mie",
+    "categorie": "Épicerie salée",
+    "lien": ""
+  },
+  {
+    "id": 20,
+    "nom": "Jambon",
+    "categorie": "Viande",
+    "lien": ""
+  },
+  {
+    "id": 21,
+    "nom": "Grullière",
+    "categorie": "Produit laitier",
+    "lien": ""
+  },
+  {
+    "id": 22,
+    "nom": "Fromage croque monsieur",
+    "categorie": "Produit laitier",
+    "lien": ""
+  },
+  {
+    "id": 23,
+    "nom": "Carrotte",
+    "categorie": "Légume/Fruit",
+    "lien": ""
+  },
+  {
+    "id": 24,
+    "nom": "Pain à burger",
+    "categorie": "Épicerie salée",
+    "lien": ""
+  },
+  {
+    "id": 25,
+    "nom": "Fromage à burger",
+    "categorie": "Produit laitier",
+    "lien": ""
+  },
+  {
+    "id": 26,
+    "nom": "Steak haché",
+    "categorie": "Viande",
+    "lien": ""
+  },
+  {
+    "id": 27,
+    "nom": "Camenbert",
+    "categorie": "Produit laitier",
+    "lien": ""
+  },
+  {
+    "id": 28,
+    "nom": "Fromage de chèvre",
+    "categorie": "Produit laitier",
+    "lien": ""
+  },
+  {
+    "id": 29,
+    "nom": "Lait",
+    "categorie": "Produit laitier",
+    "lien": ""
+  },
+  {
+    "id": 30,
+    "nom": "Oignon",
+    "categorie": "Légume/Fruit",
+    "lien": ""
+  },
+  {
+    "id": 31,
+    "nom": "Purée épinard",
+    "categorie": "Produit frais",
+    "lien": ""
+  }
+]

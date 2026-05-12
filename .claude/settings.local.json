@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const h=require\\('http'\\);const fs=require\\('fs'\\);const p=require\\('path'\\);['db/ingredients.json','db/meals.json','db/current_meals.json','db/cart.json','db/stock.json','public/index.html','public/style.css','public/app.js','server.js'].forEach\\(f=>{const ok=fs.existsSync\\(p.join\\(__dirname||'.',f\\)\\);console.log\\(\\(ok?'OK':'MANQUANT'\\)+' '+f\\)}\\)\")",
+      "Bash(node server.js)",
+      "Bash(Start-Sleep -Seconds 2)",
+      "Bash(Invoke-RestMethod -Uri \"http://localhost:3000/api/ingredients\" -Method GET)",
+      "Bash(curl -s http://localhost:3000/api/ingredients)",
+      "Bash(curl -s -X POST http://localhost:3000/api/ingredients -H \"Content-Type: application/json\" -d '{\"nom\":\"Tomates\"}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/ingredients -H \"Content-Type: application/json\" -d '{\"nom\":\"Oignons\"}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/meals -H \"Content-Type: application/json\" -d '{\"nom\":\"Salade tomates\",\"ingredients\":[1,2]}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/current-meals -H \"Content-Type: application/json\" -d '{\"repasId\":1}')",
+      "Bash(curl -s http://localhost:3000/api/cart)",
+      "Bash(curl -s -X PUT http://localhost:3000/api/cart/1 -H \"Content-Type: application/json\" -d '{}')",
+      "Bash(curl -s http://localhost:3000/api/stock)",
+      "Bash(netstat -ano)",
+      "Bash(awk '{print $5}')",
+      "Bash(kill 27184)",
+      "Bash(node -e ' *)",
+      "Bash(curl -s -X POST http://localhost:3000/api/ingredients -H 'Content-Type: application/json' -d '{\"nom\":\"Tomates\",\"categorie\":\"Legumes\",\"lien\":\"https://drive.google.com/test\"}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/ingredients -H 'Content-Type: application/json' -d '{\"nom\":\"Pates\",\"categorie\":\"Epicerie\",\"lien\":\"\"}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/cart -H 'Content-Type: application/json' -d '{\"nom\":\"Tomates\",\"quantite\":3}')",
+      "Bash(curl -s -X PUT http://localhost:3000/api/cart/1 -H 'Content-Type: application/json' -d '{\"achete\":true}')",
+      "Bash(curl -s -X PUT http://localhost:3000/api/stock/1 -H 'Content-Type: application/json' -d '{\"quantite\":2}')",
+      "Bash(curl -s -X PUT http://localhost:3000/api/stock/1 -H 'Content-Type: application/json' -d '{\"quantite\":0}')",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\chloe\\\\Downloads\\\\Gestionnaire Course\" -Recurse -Force)",
+      "Bash(Select-Object -Property FullName, PSIsContainer)",
+      "Bash(Sort-Object FullName)"
+    ]
+  }
+}

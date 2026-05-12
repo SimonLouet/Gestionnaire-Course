@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestionnaire de Courses</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>Gestionnaire de Courses</h1>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="ingredients" onclick="showTab('ingredients')">
+    Ingredients <span class="badge" id="badge-ingredients"></span>
+  </button>
+  <button class="tab-btn" data-tab="meals" onclick="showTab('meals')">
+    Repas <span class="badge" id="badge-meals"></span>
+  </button>
+  <button class="tab-btn" data-tab="menu" onclick="showTab('menu')">
+    Menu <span class="badge" id="badge-menu"></span>
+  </button>
+  <button class="tab-btn" data-tab="cart" onclick="showTab('cart')">
+    Panier <span class="badge" id="badge-cart"></span>
+  </button>
+  <button class="tab-btn" data-tab="stock" onclick="showTab('stock')">
+    Stock <span class="badge" id="badge-stock"></span>
+  </button>
+</nav>
+
+<main>
+
+  <!-- ===== INGREDIENTS ===== -->
+  <div id="tab-ingredients" class="tab-content active">
+    <div class="card form-card">
+      <h2>Ajouter un ingredient</h2>
+      <div class="ing-add-form">
+        <div class="form-row">
+          <input type="text" id="ing-name" placeholder="Nom *" onkeydown="if(event.key==='Enter')addIngredient()">
+          <input type="text" id="ing-categorie" list="cat-datalist" placeholder="Categorie">
+          <datalist id="cat-datalist"></datalist>
+        </div>
+        <div class="form-row">
+          <input type="text" id="ing-lien" placeholder="Lien Drive (optionnel)">
+          <button class="btn-primary" onclick="addIngredient()">Ajouter</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div id="ingredients-list"></div>
+    </div>
+  </div>
+
+  <!-- ===== REPAS ===== -->
+  <div id="tab-meals" class="tab-content">
+    <div class="card form-card">
+      <h2>Ajouter un repas</h2>
+      <button class="btn-primary" onclick="openMealModal(null)">+ Nouveau repas</button>
+    </div>
+    <div class="card">
+      <div id="meals-list"></div>
+    </div>
+  </div>
+
+  <!-- ===== MENU EN COURS ===== -->
+  <div id="tab-menu" class="tab-content">
+    <div class="card">
+      <h2>Repas en cours</h2>
+      <p class="hint">Allez dans l'onglet Repas pour ajouter un repas au menu.</p>
+      <div id="menu-list"></div>
+    </div>
+  </div>
+
+  <!-- ===== PANIER ===== -->
+  <div id="tab-cart" class="tab-content">
+    <div class="card form-card">
+      <h2>Ajouter au panier</h2>
+      <div class="form-row">
+        <input type="text" id="cart-input" list="cart-datalist" placeholder="Nom de l'ingredient..." onkeydown="if(event.key==='Enter')addToCart()">
+        <datalist id="cart-datalist"></datalist>
+        <button class="btn-primary" onclick="addToCart()">Ajouter</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>A acheter</h3>
+      <div id="cart-list-pending"></div>
+    </div>
+    <div class="card" id="card-cart-bought" style="display:none">
+      <div class="section-header">
+        <h3>Deja achetes</h3>
+        <button class="btn-danger-sm" onclick="clearBought()">Vider</button>
+      </div>
+      <div id="cart-list-bought"></div>
+    </div>
+  </div>
+
+  <!-- ===== STOCK ===== -->
+  <div id="tab-stock" class="tab-content">
+    <div class="card">
+      <h2>Stock disponible</h2>
+      <div id="stock-list"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ===== MODAL REPAS ===== -->
+<div id="meal-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeMealModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Nouveau repas</h2>
+      <button class="btn-close" onclick="closeMealModal()">x</button>
+    </div>
+    <div class="modal-body">
+      <label>Nom du repas</label>
+      <input type="text" id="modal-meal-name" placeholder="Ex: Poulet rotis..." class="input-full">
+      <label>Ingredients</label>
+      <div id="modal-ingredients" class="ingredients-grid"></div>
+      <p id="modal-no-ing" class="hint" style="display:none">Aucun ingredient disponible. Allez dans l'onglet Ingredients pour en ajouter.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeMealModal()">Annuler</button>
+      <button class="btn-primary" onclick="saveMeal()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
