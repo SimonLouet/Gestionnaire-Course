@@ -424,11 +424,14 @@ function renderMenu() {
   }
   list.innerHTML = [...currentMeals].sort((a, b) => a.nom.localeCompare(b.nom, 'fr')).map(entry => {
     const meal = meals.find(m => m.id === entry.repasId);
+    const personnes = entry.personnes || 2;
+    const multiplier = meal ? personnes / (meal.portions || 2) : 1;
     const chips = meal
       ? meal.ingredients.map(e => {
           const { id, quantite } = ingEntry(e);
           const ing = ingredients.find(i => i.id === id);
-          const qty = fmtQty(quantite, ing?.unite);
+          const adjQty = Math.round(quantite * multiplier * 10) / 10;
+          const qty = fmtQty(adjQty, ing?.unite);
           return `<span>${ing ? escHtml(ing.nom) : 'supprime'}${qty ? ` ${escHtml(qty)}` : ''}</span>`;
         }).join('')
       : '';

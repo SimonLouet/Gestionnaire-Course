@@ -230,19 +230,20 @@ const server = http.createServer(async (req, res) => {
         const entry = currentMeals.find(c => c.id === id);
         if (!entry) return sendNotFound(res);
 
-        // Décrémenter les ingrédients du stock (quantité - 1 par ingrédient)
         const meals = readDB('meals');
         const meal = meals.find(m => m.id === entry.repasId);
         if (meal) {
+          const multiplier = (entry.personnes || meal.portions || 2) / (meal.portions || 2);
           let stock = readDB('stock');
-          for (const entry of meal.ingredients) {
-            const ingId = typeof entry === 'number' ? entry : entry.id;
-            const ingQty = typeof entry === 'number' ? 1 : (entry.quantite || 1);
+          for (const ing of meal.ingredients) {
+            const ingId = typeof ing === 'number' ? ing : ing.id;
+            const baseQty = typeof ing === 'number' ? 1 : (ing.quantite || 1);
+            const ingQty = Math.round(baseQty * multiplier * 10) / 10;
             const sIdx = stock.findIndex(s => s.ingredientId === ingId);
             if (sIdx !== -1) {
               const qty = stock[sIdx].quantite || 1;
               if (qty <= ingQty) stock.splice(sIdx, 1);
-              else stock[sIdx].quantite = qty - ingQty;
+              else stock[sIdx].quantite = Math.round((qty - ingQty) * 10) / 10;
             }
           }
           writeDB('stock', stock);
