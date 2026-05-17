@@ -378,6 +378,18 @@ const server = http.createServer(async (req, res) => {
         sendJSON(res, { ok: true });
       }
 
+    // ---- EXPORT ----
+    } else if (resource === 'export' && method === 'GET') {
+      const validTables = ['ingredients', 'meals', 'current_meals', 'cart', 'stock'];
+      const table = parts[1];
+      if (!table || !validTables.includes(table)) return sendNotFound(res);
+      const data = readDB(table);
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Content-Disposition': `attachment; filename="${table}.json"`,
+      });
+      res.end(JSON.stringify(data, null, 2));
+
     } else {
       sendNotFound(res);
     }

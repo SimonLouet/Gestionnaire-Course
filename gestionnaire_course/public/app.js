@@ -837,5 +837,19 @@ async function deleteStockItem(id) {
   renderStock();
 }
 
+// === EXPORT ===
+async function exportDB() {
+  const tables = ['ingredients', 'meals', 'current_meals', 'cart', 'stock'];
+  for (const table of tables) {
+    const a = document.createElement('a');
+    a.href = `${BASE}/api/export/${table}`;
+    a.download = `${table}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    await new Promise(r => setTimeout(r, 300));
+  }
+}
+
 // === INIT ===
 loadAll();

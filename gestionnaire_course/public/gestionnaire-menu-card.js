@@ -45,9 +45,8 @@ class GestionnaireMenuCard extends HTMLElement {
   /* ---- Fetch ---- */
   async _fetchAndRender() {
     try {
-      // Établit la session ingress (pose le cookie que le proxy HA utilise)
       if (this._hass) {
-        await this._hass.callApi('POST', 'hassio/ingress/session');
+        try { await this._hass.callApi('POST', 'hassio/ingress/session'); } catch (_) {}
       }
       const [currentMeals, meals, ingredients] = await Promise.all([
         this._get('/api/current-meals'),
@@ -61,7 +60,7 @@ class GestionnaireMenuCard extends HTMLElement {
   }
 
   async _get(path) {
-    const res = await fetch(this._apiUrl + path);
+    const res = await fetch(this._apiUrl + path, { credentials: 'include' });
     if (!res.ok) throw new Error(`HTTP ${res.status} sur ${path}`);
     return res.json();
   }
