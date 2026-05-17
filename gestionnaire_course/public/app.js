@@ -441,28 +441,26 @@ function isoDateStr(d) {
 }
 
 function renderMenu() {
-  const days = getWeekDays();
-  const todayStr = isoDateStr(new Date());
-  const unscheduled = currentMeals.filter(c => !c.date);
-
-  const weekLabel = document.getElementById('menu-week-label');
-  if (weekLabel) {
-    const first = days[0].toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
-    const last  = days[6].toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-    weekLabel.textContent = `${first} – ${last}`;
+  const list = document.getElementById('menu-list');
+  if (!currentMeals.length) {
+    list.innerHTML = '<p class="list-empty">Aucun repas au menu. Ajoutez des repas depuis l\'onglet Repas.</p>';
+    return;
   }
-
-  const grid = document.getElementById('menu-calendar-grid');
-  if (grid) {
-    grid.innerHTML = days.map(day => {
-      const dateStr = isoDateStr(day);
-      const isToday = dateStr === todayStr;
-      const dayName = day.toLocaleDateString('fr-FR', { weekday: 'short' });
-      const dayDate = day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-      return `<div class="menu-day-row${isToday ? ' menu-today' : ''}">
-        <div class="menu-day-label">
-          <div class="menu-day-name">${escHtml(dayName)}</div>
-          <div class="menu-day-date">${escHtml(dayDate)}</div>
+  list.innerHTML = [...currentMeals].sort((a, b) => a.nom.localeCompare(b.nom, 'fr')).map(entry => {
+    const meal = meals.find(m => m.id === entry.repasId);
+    const chips = meal
+      ? meal.ingredients.map(e => {
+          const { id, quantite } = ingEntry(e);
+          const ing = ingredients.find(i => i.id === id);
+          const qty = fmtQty(quantite, ing?.unite);
+          return `<span>${ing ? escHtml(ing.nom) : 'supprime'}${qty ? ` ${escHtml(qty)}` : ''}</span>`;
+        }).join('')
+      : '';
+    return `
+      <div class="menu-card">
+        <div class="menu-card-header">
+          <h3>${escHtml(entry.nom)} <span class="meal-portions-badge">${entry.personnes || 2} pers.</span></h3>
+          <button class="btn-success" onclick="doneMeal(${entry.id})">&#10003; Repas fait</button>
         </div>
         ${['midi', 'soir'].map(moment => {
           const slotEntries = currentMeals.filter(c => c.date === dateStr && c.moment === moment);

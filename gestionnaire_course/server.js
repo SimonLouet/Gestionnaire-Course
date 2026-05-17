@@ -246,16 +246,11 @@ const server = http.createServer(async (req, res) => {
         const meals = readDB('meals');
         const meal = meals.find(m => m.id === entry.repasId);
         if (meal) {
-          let stock = readDB('stock');
-          const customQtys = body.quantities || {};
           const multiplier = (entry.personnes || meal.portions || 2) / (meal.portions || 2);
-          for (const ingEntry of meal.ingredients) {
-            const ingId = typeof ingEntry === 'number' ? ingEntry : ingEntry.id;
-            const baseQty = typeof ingEntry === 'number' ? 1 : (ingEntry.quantite || 1);
-            const ingQty = ingId in customQtys
-              ? Math.max(0, parseFloat(customQtys[ingId]) || 0)
-              : Math.max(0, Math.round(baseQty * multiplier * 10) / 10);
-            if (ingQty <= 0) continue;
+          let stock = readDB('stock');
+          for (const entry of meal.ingredients) {
+            const ingId = typeof entry === 'number' ? entry : entry.id;
+            const ingQty = typeof entry === 'number' ? 1 : (entry.quantite || 1);
             const sIdx = stock.findIndex(s => s.ingredientId === ingId);
             if (sIdx !== -1) {
               const qty = stock[sIdx].quantite || 0;
