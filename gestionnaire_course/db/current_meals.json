@@ -1,27 +1,30 @@
 [
   {
-    "id": 1,
-    "repasId": 9,
-    "personnes": 2
-  },
-  {
     "id": 2,
     "repasId": 9,
-    "personnes": 2
+    "personnes": 2,
+    "date": null,
+    "moment": null
   },
   {
     "id": 3,
     "repasId": 9,
-    "personnes": 2
+    "personnes": 2,
+    "date": null,
+    "moment": null
   },
   {
     "id": 4,
     "repasId": 9,
-    "personnes": 2
+    "personnes": 2,
+    "date": null,
+    "moment": null
   },
   {
     "id": 5,
     "repasId": 9,
-    "personnes": 2
+    "personnes": 2,
+    "date": null,
+    "moment": null
   }
 ]

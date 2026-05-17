@@ -76,9 +76,21 @@
   <!-- ===== MENU EN COURS ===== -->
   <div id="tab-menu" class="tab-content">
     <div class="card">
-      <h2>Repas en cours</h2>
-      <p class="hint">Allez dans l'onglet Repas pour ajouter un repas au menu.</p>
-      <div id="menu-list"></div>
+      <div class="menu-week-nav">
+        <button class="btn-icon" onclick="changeMenuWeek(-1)">&#8592;</button>
+        <span id="menu-week-label"></span>
+        <button class="btn-icon" onclick="changeMenuWeek(1)">&#8594;</button>
+      </div>
+      <div id="menu-calendar-grid"></div>
+    </div>
+    <div class="card">
+      <h2>À planifier</h2>
+      <p id="menu-hint" class="hint">Allez dans l'onglet Repas pour ajouter un repas au menu.</p>
+      <div id="menu-unscheduled-list"
+           ondragover="event.preventDefault()"
+           ondragenter="this.classList.add('drag-over-list')"
+           ondragleave="if(!this.contains(event.relatedTarget))this.classList.remove('drag-over-list')"
+           ondrop="dropToUnscheduled(event)"></div>
     </div>
   </div>
 
@@ -190,6 +202,25 @@
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeBuyModal()">Annuler</button>
       <button class="btn-success" onclick="confirmBuy()">&#10003; Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL REPAS FAIT ===== -->
+<div id="done-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeDoneModal()">
+  <div class="modal modal-sm" style="max-width:400px">
+    <div class="modal-header">
+      <h2 id="done-modal-title"></h2>
+      <button class="btn-close" onclick="closeDoneModal()">x</button>
+    </div>
+    <div class="modal-body">
+      <p id="done-modal-subtitle" style="color:var(--muted);font-size:0.85rem;margin-bottom:14px"></p>
+      <label>Quantités retirées du stock</label>
+      <div id="done-modal-ings"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeDoneModal()">Annuler</button>
+      <button class="btn-success" onclick="confirmDoneMeal()">&#10003; Repas fait</button>
     </div>
   </div>
 </div>

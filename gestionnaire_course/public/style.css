@@ -277,33 +277,69 @@ main {
 .meal-info .meal-last-added { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
 .meal-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
-/* Current meals */
-.menu-card {
-  padding: 16px;
-  border: 1.5px solid var(--border);
-  border-radius: 8px;
-  margin-bottom: 12px;
-  background: var(--primary-light);
-}
-.menu-card:last-child { margin-bottom: 0; }
-.menu-card-header {
+/* === MENU CALENDRIER === */
+.menu-week-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
+  margin-bottom: 14px;
   gap: 8px;
 }
-.menu-card-header h3 { font-size: 1rem; color: var(--primary); }
-.menu-ings { font-size: 0.85rem; color: var(--text-light); }
-.menu-ings span {
-  display: inline-block;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 2px 9px;
-  margin: 2px;
-  font-size: 0.8rem;
+#menu-week-label { flex: 1; text-align: center; font-weight: 600; font-size: 0.95rem; }
+
+.menu-day-row {
+  display: grid;
+  grid-template-columns: 68px 1fr 1fr;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: start;
+}
+.menu-day-row:last-child { border-bottom: none; }
+.menu-day-label { display: flex; flex-direction: column; align-items: center; gap: 1px; padding-top: 6px; }
+.menu-day-name { font-size: 0.82rem; font-weight: 600; color: var(--text-light); text-transform: capitalize; }
+.menu-day-date { font-size: 0.75rem; color: var(--muted); }
+.menu-today .menu-day-name { color: var(--primary); font-weight: 700; }
+.menu-today .menu-day-date { color: var(--primary); }
+
+.menu-slot {
+  min-height: 52px;
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  padding: 4px 6px;
+  transition: background 0.12s, border-color 0.12s;
+}
+.menu-slot.drag-over { border-color: var(--primary); background: var(--primary-light); }
+.menu-slot-label { font-size: 0.68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; }
+.menu-slot-empty { font-size: 0.72rem; color: var(--border); font-style: italic; padding: 2px; }
+
+.menu-meal-card {
+  background: var(--primary-light);
+  border: 1.5px solid var(--primary);
+  border-radius: 6px;
+  padding: 4px 6px;
+  margin-bottom: 4px;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  user-select: none;
+}
+.menu-meal-card:active { cursor: grabbing; }
+.menu-meal-card:last-child { margin-bottom: 0; }
+.menu-meal-card-lg { padding: 8px 10px; margin-bottom: 6px; }
+.menu-drag-handle { color: var(--muted); font-size: 0.65rem; line-height: 0.75; flex-shrink: 0; letter-spacing: -1px; opacity: 0.5; }
+.menu-meal-info { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.menu-meal-name { font-size: 0.78rem; font-weight: 600; color: var(--primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menu-meal-card-lg .menu-meal-name { font-size: 0.95rem; }
+.menu-meal-actions { display: flex; gap: 3px; flex-shrink: 0; }
+#menu-unscheduled-list { min-height: 36px; }
+#menu-unscheduled-list.drag-over-list { background: var(--primary-light); border-radius: 8px; padding: 6px; }
+
+@media (max-width: 500px) {
+  .menu-day-row { grid-template-columns: 52px 1fr 1fr; gap: 5px; }
+  .menu-day-name { font-size: 0.72rem; }
+  .menu-meal-name { font-size: 0.72rem; }
 }
 
 /* Cart */
@@ -437,6 +473,13 @@ main {
 .ing-modal-qty input::-webkit-inner-spin-button { -webkit-appearance: none; }
 .ing-modal-unite { font-size: 0.72rem; color: var(--muted); font-weight: 400; }
 .meal-ing-qty { font-size: 0.78rem; color: var(--muted); }
+
+/* Done meal modal ingredient rows */
+.done-ing-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.done-ing-row:last-child { border-bottom: none; }
+.done-ing-name { flex: 1; font-size: 0.95rem; }
+.done-ing-qty { /* styled by .qty-value */ }
+.done-ing-unite { font-size: 0.78rem; color: var(--muted); min-width: 24px; }
 
 /* Misc */
 .hint {

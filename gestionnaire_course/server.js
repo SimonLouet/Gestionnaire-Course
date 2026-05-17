@@ -225,24 +225,42 @@ const server = http.createServer(async (req, res) => {
         writeDB('cart', cart);
         sendJSON(res, { ...newEntry, nom: meal.nom }, 201);
 
+      } else if (method === 'PUT' && id) {
+        const body = await parseBody(req);
+        const currentMeals = readDB('current_meals');
+        const idx = currentMeals.findIndex(c => c.id === id);
+        if (idx === -1) return sendNotFound(res);
+        if ('date' in body) currentMeals[idx].date = body.date || null;
+        if ('moment' in body) currentMeals[idx].moment = body.moment || null;
+        writeDB('current_meals', currentMeals);
+        const meals = readDB('meals');
+        const meal = meals.find(m => m.id === currentMeals[idx].repasId);
+        sendJSON(res, { ...currentMeals[idx], nom: meal ? meal.nom : '(supprimé)' });
+
       } else if (method === 'DELETE' && id) {
+        const body = await parseBody(req);
         const currentMeals = readDB('current_meals');
         const entry = currentMeals.find(c => c.id === id);
         if (!entry) return sendNotFound(res);
 
-        // Décrémenter les ingrédients du stock (quantité - 1 par ingrédient)
         const meals = readDB('meals');
         const meal = meals.find(m => m.id === entry.repasId);
         if (meal) {
           let stock = readDB('stock');
-          for (const entry of meal.ingredients) {
-            const ingId = typeof entry === 'number' ? entry : entry.id;
-            const ingQty = typeof entry === 'number' ? 1 : (entry.quantite || 1);
+          const customQtys = body.quantities || {};
+          const multiplier = (entry.personnes || meal.portions || 2) / (meal.portions || 2);
+          for (const ingEntry of meal.ingredients) {
+            const ingId = typeof ingEntry === 'number' ? ingEntry : ingEntry.id;
+            const baseQty = typeof ingEntry === 'number' ? 1 : (ingEntry.quantite || 1);
+            const ingQty = ingId in customQtys
+              ? Math.max(0, parseFloat(customQtys[ingId]) || 0)
+              : Math.max(0, Math.round(baseQty * multiplier * 10) / 10);
+            if (ingQty <= 0) continue;
             const sIdx = stock.findIndex(s => s.ingredientId === ingId);
             if (sIdx !== -1) {
-              const qty = stock[sIdx].quantite || 1;
+              const qty = stock[sIdx].quantite || 0;
               if (qty <= ingQty) stock.splice(sIdx, 1);
-              else stock[sIdx].quantite = qty - ingQty;
+              else stock[sIdx].quantite = Math.round((qty - ingQty) * 10) / 10;
             }
           }
           writeDB('stock', stock);

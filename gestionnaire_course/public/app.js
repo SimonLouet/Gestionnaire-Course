@@ -7,6 +7,7 @@ let stock = [];
 
 let activeTab = 'ingredients';
 let editingMealId = null;
+let menuWeekOffset = 0;
 
 // === API ===
 const BASE = window.location.pathname.replace(/\/+$/, '');
@@ -15,6 +16,7 @@ const api = {
   post: (url, body) => fetch(BASE + url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json()),
   put: (url, body) => fetch(BASE + url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json()),
   delete: url => fetch(BASE + url, { method: 'DELETE' }).then(r => r.json()),
+  deleteWithBody: (url, body) => fetch(BASE + url, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json()),
 };
 
 async function loadAll() {
@@ -370,6 +372,7 @@ function formatDate(isoStr) {
 
 let personnesMealId = null;
 let personnesBtn = null;
+let doneMealId = null;
 
 function openPersonnesModal(mealId, btn) {
   const meal = meals.find(m => m.id === mealId);
@@ -416,40 +419,185 @@ async function addMealToMenu(mealId, btn, personnes) {
 }
 
 // === MENU EN COURS ===
-function renderMenu() {
-  const list = document.getElementById('menu-list');
-  if (!currentMeals.length) {
-    list.innerHTML = '<p class="list-empty">Aucun repas au menu. Ajoutez des repas depuis l\'onglet Repas.</p>';
-    return;
-  }
-  list.innerHTML = [...currentMeals].sort((a, b) => a.nom.localeCompare(b.nom, 'fr')).map(entry => {
-    const meal = meals.find(m => m.id === entry.repasId);
-    const chips = meal
-      ? meal.ingredients.map(e => {
-          const { id, quantite } = ingEntry(e);
-          const ing = ingredients.find(i => i.id === id);
-          const qty = fmtQty(quantite, ing?.unite);
-          return `<span>${ing ? escHtml(ing.nom) : 'supprime'}${qty ? ` ${escHtml(qty)}` : ''}</span>`;
-        }).join('')
-      : '';
-    return `
-      <div class="menu-card">
-        <div class="menu-card-header">
-          <h3>${escHtml(entry.nom)} <span class="meal-portions-badge">${entry.personnes || 2} pers.</span></h3>
-          <button class="btn-success" onclick="doneMeal(${entry.id})">&#10003; Repas fait</button>
-        </div>
-        <div class="menu-ings">${chips || '<em>Aucun ingredient</em>'}</div>
-      </div>`;
-  }).join('');
+function changeMenuWeek(delta) {
+  menuWeekOffset += delta;
+  renderMenu();
 }
 
-async function doneMeal(id) {
-  if (!confirm('Marquer ce repas comme fait ? Ses ingredients seront retires du stock.')) return;
-  await api.delete(`/api/current-meals/${id}`);
+function getWeekDays() {
+  const today = new Date();
+  const dow = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1) + menuWeekOffset * 7);
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+  });
+}
+
+function isoDateStr(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+function renderMenu() {
+  const days = getWeekDays();
+  const todayStr = isoDateStr(new Date());
+  const unscheduled = currentMeals.filter(c => !c.date);
+
+  const weekLabel = document.getElementById('menu-week-label');
+  if (weekLabel) {
+    const first = days[0].toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+    const last  = days[6].toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    weekLabel.textContent = `${first} – ${last}`;
+  }
+
+  const grid = document.getElementById('menu-calendar-grid');
+  if (grid) {
+    grid.innerHTML = days.map(day => {
+      const dateStr = isoDateStr(day);
+      const isToday = dateStr === todayStr;
+      const dayName = day.toLocaleDateString('fr-FR', { weekday: 'short' });
+      const dayDate = day.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+      return `<div class="menu-day-row${isToday ? ' menu-today' : ''}">
+        <div class="menu-day-label">
+          <div class="menu-day-name">${escHtml(dayName)}</div>
+          <div class="menu-day-date">${escHtml(dayDate)}</div>
+        </div>
+        ${['midi', 'soir'].map(moment => {
+          const slotEntries = currentMeals.filter(c => c.date === dateStr && c.moment === moment);
+          return `<div class="menu-slot"
+            ondragover="event.preventDefault()"
+            ondragenter="this.classList.add('drag-over')"
+            ondragleave="if(!this.contains(event.relatedTarget))this.classList.remove('drag-over')"
+            ondrop="dropToSlot(event,'${dateStr}','${moment}')">
+            <div class="menu-slot-label">${moment === 'midi' ? 'Midi' : 'Soir'}</div>
+            ${slotEntries.length
+              ? slotEntries.map(e => menuMealCardHtml(e, false)).join('')
+              : '<div class="menu-slot-empty">Déposer ici</div>'}
+          </div>`;
+        }).join('')}
+      </div>`;
+    }).join('');
+  }
+
+  const hint = document.getElementById('menu-hint');
+  const unscheduledList = document.getElementById('menu-unscheduled-list');
+  if (hint) hint.style.display = currentMeals.length === 0 ? '' : 'none';
+  if (unscheduledList) {
+    unscheduledList.innerHTML = unscheduled.length
+      ? unscheduled.map(e => menuMealCardHtml(e, true)).join('')
+      : currentMeals.length > 0 ? '<p class="list-empty">Tous les repas sont planifiés !</p>' : '';
+  }
+}
+
+function menuMealCardHtml(entry, large) {
+  return `<div class="menu-meal-card${large ? ' menu-meal-card-lg' : ''}"
+    draggable="true"
+    ondragstart="dragCurrentMeal(event,${entry.id})">
+    <span class="menu-drag-handle">&#8942;&#8942;</span>
+    <div class="menu-meal-info">
+      <span class="menu-meal-name">${escHtml(entry.nom)}</span>
+      <span class="meal-portions-badge">${entry.personnes || 2} pers.</span>
+    </div>
+    <div class="menu-meal-actions">
+      ${entry.date ? `<button class="btn-icon" onclick="unscheduleCurrentMeal(${entry.id})" title="Retirer du planning">&#10006;</button>` : ''}
+      <button class="btn-icon" onclick="openDoneModal(${entry.id})" title="Repas fait">&#10003;</button>
+    </div>
+  </div>`;
+}
+
+function dragCurrentMeal(event, id) {
+  event.dataTransfer.setData('text/plain', String(id));
+  event.dataTransfer.effectAllowed = 'move';
+}
+
+async function dropToSlot(event, date, moment) {
+  event.preventDefault();
+  event.currentTarget.classList.remove('drag-over');
+  const id = parseInt(event.dataTransfer.getData('text/plain'));
+  if (!id) return;
+  const entry = currentMeals.find(c => c.id === id);
+  if (entry && entry.date === date && entry.moment === moment) return;
+  await api.put(`/api/current-meals/${id}`, { date, moment });
+  const idx = currentMeals.findIndex(c => c.id === id);
+  if (idx !== -1) { currentMeals[idx].date = date; currentMeals[idx].moment = moment; }
+  renderMenu();
+}
+
+async function dropToUnscheduled(event) {
+  event.preventDefault();
+  document.getElementById('menu-unscheduled-list')?.classList.remove('drag-over-list');
+  const id = parseInt(event.dataTransfer.getData('text/plain'));
+  if (!id) return;
+  await api.put(`/api/current-meals/${id}`, { date: null, moment: null });
+  const idx = currentMeals.findIndex(c => c.id === id);
+  if (idx !== -1) { currentMeals[idx].date = null; currentMeals[idx].moment = null; }
+  renderMenu();
+}
+
+async function unscheduleCurrentMeal(id) {
+  await api.put(`/api/current-meals/${id}`, { date: null, moment: null });
+  const idx = currentMeals.findIndex(c => c.id === id);
+  if (idx !== -1) { currentMeals[idx].date = null; currentMeals[idx].moment = null; }
+  renderMenu();
+}
+
+function openDoneModal(id) {
+  const entry = currentMeals.find(c => c.id === id);
+  if (!entry) return;
+  const meal = meals.find(m => m.id === entry.repasId);
+  if (!meal) return;
+  doneMealId = id;
+  document.getElementById('done-modal-title').textContent = meal.nom;
+  document.getElementById('done-modal-subtitle').textContent = `${entry.personnes || meal.portions || 2} personne(s)`;
+  const multiplier = (entry.personnes || meal.portions || 2) / (meal.portions || 2);
+  const ingsEl = document.getElementById('done-modal-ings');
+  ingsEl.innerHTML = meal.ingredients.map(e => {
+    const { id: ingId, quantite: baseQty } = ingEntry(e);
+    const ing = ingredients.find(i => i.id === ingId);
+    if (!ing) return '';
+    const qty = Math.round(baseQty * multiplier * 10) / 10;
+    return `<div class="done-ing-row">
+      <span class="done-ing-name">${escHtml(ing.nom)}</span>
+      <div class="qty-control">
+        <button class="btn-qty" onclick="changeDoneQty(${ingId}, -1)">&#8722;</button>
+        <input type="number" class="qty-value done-ing-qty" data-ing-id="${ingId}" value="${qty}" min="0" step="any">
+        <button class="btn-qty" onclick="changeDoneQty(${ingId}, 1)">+</button>
+      </div>
+      ${ing.unite ? `<span class="done-ing-unite">${escHtml(ing.unite)}</span>` : ''}
+    </div>`;
+  }).join('');
+  document.getElementById('done-modal').style.display = 'flex';
+}
+
+function changeDoneQty(ingId, delta) {
+  const input = document.querySelector(`#done-modal-ings .done-ing-qty[data-ing-id="${ingId}"]`);
+  if (!input) return;
+  const current = parseQty(input.value) || 0;
+  input.value = Math.max(0, Math.round((current + delta) * 10) / 10);
+}
+
+function closeDoneModal() {
+  document.getElementById('done-modal').style.display = 'none';
+  doneMealId = null;
+}
+
+async function confirmDoneMeal() {
+  if (!doneMealId) return;
+  const quantities = {};
+  document.querySelectorAll('#done-modal-ings .done-ing-qty').forEach(input => {
+    const ingId = parseInt(input.dataset.ingId);
+    quantities[ingId] = Math.max(0, parseQty(input.value) || 0);
+  });
+  const id = doneMealId;
+  closeDoneModal();
+  await api.deleteWithBody(`/api/current-meals/${id}`, { quantities });
   currentMeals = currentMeals.filter(c => c.id !== id);
   stock = await api.get('/api/stock');
   updateBadges();
   renderMenu();
+  if (activeTab === 'stock') renderStock();
 }
 
 // === PANIER ===
