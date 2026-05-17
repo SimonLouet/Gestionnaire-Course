@@ -20,12 +20,14 @@ class GestionnaireMenuCard extends HTMLElement {
   }
 
   connectedCallback() {
-    this._fetchAndRender();
+    this._connected = true;
+    if (this._hass) this._fetchAndRender();
     this._refreshTimer = setInterval(() => this._fetchAndRender(), 5 * 60 * 1000);
   }
 
   disconnectedCallback() {
     clearInterval(this._refreshTimer);
+    this._connected = false;
   }
 
   /* HA appelle setConfig avant de monter l'élément */
@@ -34,8 +36,11 @@ class GestionnaireMenuCard extends HTMLElement {
     this._title  = config.title || 'Menu du jour';
   }
 
-  /* Requis par HA, non utilisé ici mais évite des warnings */
-  set hass(hass) { this._hass = hass; }
+  set hass(hass) {
+    const firstLoad = !this._hass;
+    this._hass = hass;
+    if (firstLoad && this._connected) this._fetchAndRender();
+  }
 
   /* ---- Fetch ---- */
   async _fetchAndRender() {
@@ -52,7 +57,10 @@ class GestionnaireMenuCard extends HTMLElement {
   }
 
   async _get(path) {
-    const res = await fetch(this._apiUrl + path);
+    const url = this._apiUrl + path;
+    const res = this._hass
+      ? await this._hass.fetchWithAuth(url)
+      : await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status} sur ${path}`);
     return res.json();
   }
