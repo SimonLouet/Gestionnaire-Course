@@ -278,6 +278,24 @@ main {
 .meal-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
 /* === MENU CALENDRIER === */
+.menu-layout {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.menu-unscheduled-card {
+  width: 200px;
+  flex-shrink: 0;
+}
+.menu-calendar-card {
+  flex: 1;
+  min-width: 0;
+}
+@media (max-width: 700px) {
+  .menu-layout { flex-direction: column; }
+  .menu-unscheduled-card { width: 100%; }
+}
+
 .menu-week-nav {
   display: flex;
   align-items: center;

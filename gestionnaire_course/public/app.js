@@ -454,8 +454,11 @@ function renderMenu() {
   if (grid) {
     grid.innerHTML = days.map((d, i) => {
       const dateStr = isoDateStr(d);
-      return `<div class="menu-day-col${dateStr === todayStr ? ' menu-day-today' : ''}">
-        <div class="menu-day-label">${dayNames[i]} ${d.getDate()}</div>
+      return `<div class="menu-day-row${dateStr === todayStr ? ' menu-today' : ''}">
+        <div class="menu-day-label">
+          <span class="menu-day-name">${dayNames[i]}</span>
+          <span class="menu-day-date">${d.getDate()}</span>
+        </div>
         ${['midi', 'soir'].map(moment => {
           const slotEntries = currentMeals.filter(c => c.date === dateStr && c.moment === moment);
           return `<div class="menu-slot"

@@ -75,22 +75,24 @@
 
   <!-- ===== MENU EN COURS ===== -->
   <div id="tab-menu" class="tab-content">
-    <div class="card">
-      <div class="menu-week-nav">
-        <button class="btn-icon" onclick="changeMenuWeek(-1)">&#8592;</button>
-        <span id="menu-week-label"></span>
-        <button class="btn-icon" onclick="changeMenuWeek(1)">&#8594;</button>
+    <div class="menu-layout">
+      <div class="card menu-unscheduled-card">
+        <h2>À planifier</h2>
+        <p id="menu-hint" class="hint">Allez dans l'onglet Repas pour ajouter un repas au menu.</p>
+        <div id="menu-unscheduled-list"
+             ondragover="event.preventDefault()"
+             ondragenter="this.classList.add('drag-over-list')"
+             ondragleave="if(!this.contains(event.relatedTarget))this.classList.remove('drag-over-list')"
+             ondrop="dropToUnscheduled(event)"></div>
       </div>
-      <div id="menu-calendar-grid"></div>
-    </div>
-    <div class="card">
-      <h2>À planifier</h2>
-      <p id="menu-hint" class="hint">Allez dans l'onglet Repas pour ajouter un repas au menu.</p>
-      <div id="menu-unscheduled-list"
-           ondragover="event.preventDefault()"
-           ondragenter="this.classList.add('drag-over-list')"
-           ondragleave="if(!this.contains(event.relatedTarget))this.classList.remove('drag-over-list')"
-           ondrop="dropToUnscheduled(event)"></div>
+      <div class="card menu-calendar-card">
+        <div class="menu-week-nav">
+          <button class="btn-icon" onclick="changeMenuWeek(-1)">&#8592;</button>
+          <span id="menu-week-label"></span>
+          <button class="btn-icon" onclick="changeMenuWeek(1)">&#8594;</button>
+        </div>
+        <div id="menu-calendar-grid"></div>
+      </div>
     </div>
   </div>
 
