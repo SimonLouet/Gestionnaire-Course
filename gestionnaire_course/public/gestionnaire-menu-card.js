@@ -3,8 +3,8 @@
  *
  * Installation :
  *   1. Dans HA → Paramètres → Tableaux de bord → ⋮ → Ressources
- *      Ajoutez : /api/hassio_ingress/gestionnaire_course/gestionnaire-menu-card.js
- *      (type: Module JavaScript)
+ *      Ajoutez : /local/gestionnaire-menu-card.js  (type: Module JavaScript)
+ *      Le fichier est copié automatiquement dans /config/www/ au démarrage de l'add-on.
  *   2. Ajoutez la carte dans un tableau de bord :
  *
  *      type: custom:gestionnaire-menu-card
