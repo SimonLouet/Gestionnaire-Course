@@ -2,7 +2,9 @@
   {
     "id": 1,
     "repasId": 9,
-    "personnes": 2
+    "personnes": 2,
+    "date": "2026-05-11",
+    "moment": "midi"
   },
   {
     "id": 2,

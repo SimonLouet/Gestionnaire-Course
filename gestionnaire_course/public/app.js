@@ -441,27 +441,21 @@ function isoDateStr(d) {
 }
 
 function renderMenu() {
-  const list = document.getElementById('menu-list');
-  if (!currentMeals.length) {
-    list.innerHTML = '<p class="list-empty">Aucun repas au menu. Ajoutez des repas depuis l\'onglet Repas.</p>';
-    return;
+  const days = getWeekDays();
+  const weekLabel = document.getElementById('menu-week-label');
+  if (weekLabel) {
+    const fmt = d => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+    weekLabel.textContent = `${fmt(days[0])} – ${days[6].toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`;
   }
-  list.innerHTML = [...currentMeals].sort((a, b) => a.nom.localeCompare(b.nom, 'fr')).map(entry => {
-    const meal = meals.find(m => m.id === entry.repasId);
-    const chips = meal
-      ? meal.ingredients.map(e => {
-          const { id, quantite } = ingEntry(e);
-          const ing = ingredients.find(i => i.id === id);
-          const qty = fmtQty(quantite, ing?.unite);
-          return `<span>${ing ? escHtml(ing.nom) : 'supprime'}${qty ? ` ${escHtml(qty)}` : ''}</span>`;
-        }).join('')
-      : '';
-    return `
-      <div class="menu-card">
-        <div class="menu-card-header">
-          <h3>${escHtml(entry.nom)} <span class="meal-portions-badge">${entry.personnes || 2} pers.</span></h3>
-          <button class="btn-success" onclick="doneMeal(${entry.id})">&#10003; Repas fait</button>
-        </div>
+
+  const dayNames = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+  const todayStr = isoDateStr(new Date());
+  const grid = document.getElementById('menu-calendar-grid');
+  if (grid) {
+    grid.innerHTML = days.map((d, i) => {
+      const dateStr = isoDateStr(d);
+      return `<div class="menu-day-col${dateStr === todayStr ? ' menu-day-today' : ''}">
+        <div class="menu-day-label">${dayNames[i]} ${d.getDate()}</div>
         ${['midi', 'soir'].map(moment => {
           const slotEntries = currentMeals.filter(c => c.date === dateStr && c.moment === moment);
           return `<div class="menu-slot"
@@ -479,6 +473,7 @@ function renderMenu() {
     }).join('');
   }
 
+  const unscheduled = currentMeals.filter(c => !c.date);
   const hint = document.getElementById('menu-hint');
   const unscheduledList = document.getElementById('menu-unscheduled-list');
   if (hint) hint.style.display = currentMeals.length === 0 ? '' : 'none';
