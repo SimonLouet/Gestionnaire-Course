@@ -341,7 +341,32 @@ const server = http.createServer(async (req, res) => {
     // ---- STOCK ----
     // Modèle stocké : { id, ingredientId, quantite } — nom/categorie/unite lus depuis ingredients
     } else if (resource === 'stock') {
-      if (method === 'GET') {
+      if (method === 'POST') {
+        const body = await parseBody(req);
+        const nom = (body.nom || '').trim();
+        if (!nom) return sendJSON(res, { error: 'Nom requis' }, 400);
+        const qty = Math.max(0.1, parseFloat(body.quantite) || 1);
+        const allIngredients = readDB('ingredients');
+        const match = allIngredients.find(i => i.nom.toLowerCase() === nom.toLowerCase());
+        const stockItems = readDB('stock');
+        if (match) {
+          const existing = stockItems.find(s => s.ingredientId === match.id);
+          if (existing) {
+            existing.quantite = Math.round((existing.quantite + qty) * 10) / 10;
+            writeDB('stock', stockItems);
+            return sendJSON(res, { ...existing, nom: match.nom, categorie: match.categorie || '', unite: match.unite || '' });
+          }
+          const item = { id: nextId(stockItems), ingredientId: match.id, quantite: qty };
+          stockItems.push(item);
+          writeDB('stock', stockItems);
+          return sendJSON(res, { ...item, nom: match.nom, categorie: match.categorie || '', unite: match.unite || '' }, 201);
+        }
+        const item = { id: nextId(stockItems), ingredientId: null, nom, quantite: qty };
+        stockItems.push(item);
+        writeDB('stock', stockItems);
+        return sendJSON(res, { ...item, categorie: '', unite: '' }, 201);
+
+      } else if (method === 'GET') {
         const stockItems = readDB('stock');
         const allIngredients = readDB('ingredients');
         const enriched = stockItems.map(s => {

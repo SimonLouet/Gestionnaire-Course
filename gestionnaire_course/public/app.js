@@ -763,7 +763,43 @@ async function clearBought() {
 }
 
 // === STOCK ===
+function updateStockDatalist() {
+  const dl = document.getElementById('stock-datalist');
+  if (!dl) return;
+  dl.innerHTML = ingredients.map(i => `<option value="${escAttr(i.nom)}">`).join('');
+}
+
+function onStockInputChange() {
+  const nom = (document.getElementById('stock-input')?.value || '').trim();
+  const ing = ingredients.find(i => i.nom.toLowerCase() === nom.toLowerCase());
+  const uniteEl = document.getElementById('stock-qty-unite');
+  if (uniteEl) uniteEl.textContent = ing?.unite || '';
+}
+
+async function addToStock() {
+  const input = document.getElementById('stock-input');
+  const nom = input.value.trim();
+  if (!nom) return input.focus();
+  const qty = Math.max(0.1, parseQty(document.getElementById('stock-qty')?.value) || 1);
+  const item = await api.post('/api/stock', { nom, quantite: qty });
+  if (item.error) return alert(item.error);
+  const existingIdx = stock.findIndex(s => s.id === item.id);
+  if (existingIdx !== -1) {
+    stock[existingIdx] = item;
+  } else {
+    stock.push(item);
+  }
+  input.value = '';
+  const qtyEl = document.getElementById('stock-qty');
+  if (qtyEl) qtyEl.value = 1;
+  const uniteEl = document.getElementById('stock-qty-unite');
+  if (uniteEl) uniteEl.textContent = '';
+  updateBadges();
+  renderStock();
+}
+
 function renderStock() {
+  updateStockDatalist();
   const list = document.getElementById('stock-list');
   if (!stock.length) {
     list.innerHTML = '<p class="list-empty">Stock vide. Les ingredients achetes apparaissent ici.</p>';

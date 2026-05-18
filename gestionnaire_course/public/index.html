@@ -122,6 +122,16 @@
 
   <!-- ===== STOCK ===== -->
   <div id="tab-stock" class="tab-content">
+    <div class="card form-card">
+      <h2>Ajouter au stock</h2>
+      <div class="form-row">
+        <input type="text" id="stock-input" list="stock-datalist" placeholder="Nom de l'ingredient..." oninput="onStockInputChange()" onkeydown="if(event.key==='Enter')addToStock()">
+        <datalist id="stock-datalist"></datalist>
+        <input type="number" id="stock-qty" min="0.1" step="any" value="1" style="max-width:80px" onkeydown="if(event.key==='Enter')addToStock()">
+        <span id="stock-qty-unite" style="color:var(--muted);font-size:0.85rem;min-width:30px;align-self:center"></span>
+        <button class="btn-primary" onclick="addToStock()">Ajouter</button>
+      </div>
+    </div>
     <div class="card">
       <h2>Stock disponible</h2>
       <div id="stock-list"></div>

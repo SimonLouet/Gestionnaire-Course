@@ -1,9 +1,10 @@
 [
   {
     "id": 1,
-    "nom": "Lardon",
+    "nom": "Boite de lardon",
     "categorie": "Viande",
-    "lien": ""
+    "lien": "",
+    "unite": "unité"
   },
   {
     "id": 2,
@@ -14,16 +15,17 @@
   },
   {
     "id": 3,
-    "nom": "Pate épinard",
+    "nom": "Paquet pate épinard",
     "categorie": "Produit frais",
     "lien": "",
-    "unite": "g"
+    "unite": "unité"
   },
   {
     "id": 4,
     "nom": "Knacki",
     "categorie": "Viande",
-    "lien": ""
+    "lien": "",
+    "unite": "unité"
   },
   {
     "id": 5,
@@ -43,7 +45,8 @@
     "id": 7,
     "nom": "Filet de poulet",
     "categorie": "Viande",
-    "lien": ""
+    "lien": "",
+    "unite": "unité"
   },
   {
     "id": 8,
@@ -56,7 +59,8 @@
     "id": 9,
     "nom": "Oeuf",
     "categorie": "Viande",
-    "lien": ""
+    "lien": "",
+    "unite": "unité"
   },
   {
     "id": 10,
@@ -97,7 +101,8 @@
     "id": 15,
     "nom": "Cordon bleu",
     "categorie": "Viande",
-    "lien": ""
+    "lien": "",
+    "unite": "unité"
   },
   {
     "id": 16,
@@ -108,9 +113,10 @@
   },
   {
     "id": 17,
-    "nom": "Colin",
+    "nom": "Filet de colin",
     "categorie": "Viande",
-    "lien": ""
+    "lien": "",
+    "unite": "unité"
   },
   {
     "id": 18,
@@ -130,7 +136,8 @@
     "id": 20,
     "nom": "Jambon",
     "categorie": "Viande",
-    "lien": ""
+    "lien": "",
+    "unite": "tranche"
   },
   {
     "id": 21,
@@ -171,7 +178,8 @@
     "id": 26,
     "nom": "Steak haché",
     "categorie": "Viande",
-    "lien": ""
+    "lien": "",
+    "unite": "unité"
   },
   {
     "id": 27,
@@ -205,6 +213,160 @@
     "id": 31,
     "nom": "Purée épinard",
     "categorie": "Produit frais",
+    "lien": "",
+    "unite": "g"
+  },
+  {
+    "id": 32,
+    "nom": "Pate à pizza",
+    "categorie": "Produit frais",
+    "lien": "",
+    "unite": "unité"
+  },
+  {
+    "id": 33,
+    "nom": "Mozzarella",
+    "categorie": "Produit laitier",
+    "lien": "",
+    "unite": "unité"
+  },
+  {
+    "id": 34,
+    "nom": "Bacon",
+    "categorie": "Viande",
+    "lien": "",
+    "unite": "tranche"
+  },
+  {
+    "id": 35,
+    "nom": "Chorizo",
+    "categorie": "Viande",
+    "lien": "",
+    "unite": "unité"
+  },
+  {
+    "id": 36,
+    "nom": "Poivron",
+    "categorie": "Légume/Fruit",
+    "lien": "",
+    "unite": "unité"
+  },
+  {
+    "id": 37,
+    "nom": "Chips",
+    "categorie": "Épicerie salée",
+    "lien": "",
+    "unite": "g"
+  },
+  {
+    "id": 38,
+    "nom": "Maïs",
+    "categorie": "Légume/Fruit",
+    "lien": "",
+    "unite": "g"
+  },
+  {
+    "id": 39,
+    "nom": "Haricot rouge",
+    "categorie": "Légume/Fruit",
+    "lien": "",
+    "unite": "g"
+  },
+  {
+    "id": 40,
+    "nom": "Gallette faritas",
+    "categorie": "Épicerie salée",
+    "lien": "",
+    "unite": "unité"
+  },
+  {
+    "id": 41,
+    "nom": "Sachet épice faritas",
+    "categorie": "Épicerie salée",
+    "lien": "",
+    "unite": "unité"
+  },
+  {
+    "id": 42,
+    "nom": "Poireau",
+    "categorie": "Légume/Fruit",
+    "lien": "",
+    "unite": "unité"
+  },
+  {
+    "id": 43,
+    "nom": "Truite",
+    "categorie": "Viande",
+    "lien": "",
+    "unite": "g"
+  },
+  {
+    "id": 44,
+    "nom": "Saucisse fumée",
+    "categorie": "Viande",
+    "lien": "",
+    "unite": "unité"
+  },
+  {
+    "id": 45,
+    "nom": "Haricot blanc",
+    "categorie": "Légume/Fruit",
+    "lien": "",
+    "unite": "g"
+  },
+  {
+    "id": 46,
+    "nom": "Poèlé campagnarde",
+    "categorie": "Produit frais",
+    "lien": "",
+    "unite": "g"
+  },
+  {
+    "id": 47,
+    "nom": "Thon",
+    "categorie": "Viande",
+    "lien": "",
+    "unite": "g"
+  },
+  {
+    "id": 48,
+    "nom": "Riz",
+    "categorie": "Épicerie salée",
+    "lien": "",
+    "unite": "g"
+  },
+  {
+    "id": 49,
+    "nom": "Champignon",
+    "categorie": "Légume/Fruit",
+    "lien": "",
+    "unite": "g"
+  },
+  {
+    "id": 50,
+    "nom": "Miel",
+    "categorie": "Épicerie salée",
+    "lien": "",
+    "unite": "g"
+  },
+  {
+    "id": 51,
+    "nom": "Chair à saucisse",
+    "categorie": "Viande",
+    "lien": "",
+    "unite": "g"
+  },
+  {
+    "id": 52,
+    "nom": "Courgette",
+    "categorie": "Légume/Fruit",
+    "lien": "",
+    "unite": "unité"
+  },
+  {
+    "id": 53,
+    "nom": "Choux fleur",
+    "categorie": "Légume/Fruit",
     "lien": "",
     "unite": "g"
   }
