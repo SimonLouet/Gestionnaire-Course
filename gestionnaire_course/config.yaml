@@ -1,5 +1,5 @@
 name: "Gestionnaire de Courses"
-version: "1.2.7"
+version: "1.2.9"
 slug: "gestionnaire_course"
 description: "Gestionnaire de liste de courses et de repas avec planification de menus."
 url: "https://github.com/your-username/gestionnaire-course"
@@ -10,6 +10,7 @@ arch:
   - armv7
   - i386
 init: false
+hassio_api: true
 ingress: true
 ingress_port: 3000
 panel_icon: mdi:cart

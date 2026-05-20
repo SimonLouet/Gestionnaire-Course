@@ -20,12 +20,20 @@ class GestionnaireMenuCard extends HTMLElement {
   }
 
   connectedCallback() {
-    this._fetchAndRender();
-    this._refreshTimer = setInterval(() => this._fetchAndRender(), 5 * 60 * 1000);
+    this._connected = true;
+    if (this._hass) {
+      const s = this._hass.states['sensor.gestionnaire_menu_du_jour'];
+      if (s) { this._lastStateUpdate = s.last_updated; this._render(s.attributes.midi || [], s.attributes.soir || []); }
+      else this._fetchAndRender();
+    }
+    this._refreshTimer = setInterval(() => {
+      if (this._hass && !this._hass.states['sensor.gestionnaire_menu_du_jour']) this._fetchAndRender();
+    }, 5 * 60 * 1000);
   }
 
   disconnectedCallback() {
     clearInterval(this._refreshTimer);
+    this._connected = false;
   }
 
   /* HA appelle setConfig avant de monter l'élément */
@@ -34,10 +42,21 @@ class GestionnaireMenuCard extends HTMLElement {
     this._title  = config.title || 'Menu du jour';
   }
 
-  /* Requis par HA, non utilisé ici mais évite des warnings */
-  set hass(hass) { this._hass = hass; }
+  set hass(hass) {
+    const firstLoad = !this._hass;
+    this._hass = hass;
+    const s = hass.states['sensor.gestionnaire_menu_du_jour'];
+    if (s) {
+      if (s.last_updated !== this._lastStateUpdate) {
+        this._lastStateUpdate = s.last_updated;
+        this._render(s.attributes.midi || [], s.attributes.soir || []);
+      }
+    } else if (firstLoad && this._connected) {
+      this._fetchAndRender();
+    }
+  }
 
-  /* ---- Fetch ---- */
+  /* ---- Fallback HTTP ---- */
   async _fetchAndRender() {
     try {
       const [currentMeals, meals, ingredients] = await Promise.all([
@@ -45,7 +64,25 @@ class GestionnaireMenuCard extends HTMLElement {
         this._get('/api/meals'),
         this._get('/api/ingredients'),
       ]);
-      this._render(currentMeals, meals, ingredients);
+      const today = new Date().toISOString().slice(0, 10);
+      const buildSlot = (moment) =>
+        currentMeals
+          .filter(c => c.date === today && c.moment === moment)
+          .map(entry => {
+            const meal = meals.find(m => m.id === entry.repasId);
+            if (!meal) return null;
+            const ings = meal.ingredients
+              .map(e => {
+                const { id, quantite } = this._ingEntry(e);
+                const ing = ingredients.find(i => i.id === id);
+                if (!ing) return null;
+                return { nom: ing.nom, qty: this._fmtQty(quantite, ing.unite) };
+              })
+              .filter(Boolean);
+            return { nom: meal.nom, personnes: entry.personnes || meal.portions || 2, ings };
+          })
+          .filter(Boolean);
+      this._render(buildSlot('midi'), buildSlot('soir'));
     } catch (err) {
       this._renderError(err.message);
     }
@@ -69,32 +106,10 @@ class GestionnaireMenuCard extends HTMLElement {
   }
 
   /* ---- Render ---- */
-  _render(currentMeals, meals, ingredients) {
-    const today     = new Date().toISOString().slice(0, 10);
+  _render(midi, soir) {
     const dateLabel = new Date().toLocaleDateString('fr-FR', {
       weekday: 'long', day: 'numeric', month: 'long',
     });
-
-    const buildSlot = (moment) =>
-      currentMeals
-        .filter(c => c.date === today && c.moment === moment)
-        .map(entry => {
-          const meal = meals.find(m => m.id === entry.repasId);
-          if (!meal) return null;
-          const ings = meal.ingredients
-            .map(e => {
-              const { id, quantite } = this._ingEntry(e);
-              const ing = ingredients.find(i => i.id === id);
-              if (!ing) return null;
-              return { nom: ing.nom, qty: this._fmtQty(quantite, ing.unite) };
-            })
-            .filter(Boolean);
-          return { nom: meal.nom, personnes: entry.personnes || meal.portions || 2, ings };
-        })
-        .filter(Boolean);
-
-    const midi = buildSlot('midi');
-    const soir = buildSlot('soir');
     const rien = !midi.length && !soir.length;
 
     const mealHtml = (entry) => `

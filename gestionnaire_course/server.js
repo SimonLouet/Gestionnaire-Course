@@ -5,6 +5,7 @@ const path = require('path');
 const DB_DIR = path.join(process.env.DATA_PATH || __dirname, 'db');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const PORT = parseInt(process.env.PORT) || 3000;
+const SUPERVISOR_TOKEN = process.env.SUPERVISOR_TOKEN;
 
 // --- DB helpers ---
 function readDB(table) {
@@ -45,6 +46,57 @@ function sendJSON(res, data, status = 200) {
 function sendNotFound(res) {
   res.writeHead(404, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ error: 'Non trouvé' }));
+}
+
+// --- Push menu vers HA states (lu par la Lovelace card via hass.states, fonctionne à travers Nabu Casa) ---
+function pushMenuToHA() {
+  if (!SUPERVISOR_TOKEN) return;
+  const today = new Date().toISOString().slice(0, 10);
+  const currentMeals = readDB('current_meals');
+  const meals = readDB('meals');
+  const allIngredients = readDB('ingredients');
+
+  function ingEntry(e) { return typeof e === 'number' ? { id: e, quantite: 1 } : e; }
+  function fmtQty(q, unite) {
+    const u = (unite || '').trim();
+    if (!u || u === 'unité') return q > 1 ? `×${q}` : '';
+    return `${q} ${u}`;
+  }
+  function buildSlot(moment) {
+    return currentMeals
+      .filter(c => c.date === today && c.moment === moment)
+      .map(entry => {
+        const meal = meals.find(m => m.id === entry.repasId);
+        if (!meal) return null;
+        const ings = meal.ingredients.map(e => {
+          const { id, quantite } = ingEntry(e);
+          const ing = allIngredients.find(i => i.id === id);
+          if (!ing) return null;
+          return { nom: ing.nom, qty: fmtQty(quantite, ing.unite) };
+        }).filter(Boolean);
+        return { nom: meal.nom, personnes: entry.personnes || meal.portions || 2, ings };
+      })
+      .filter(Boolean);
+  }
+
+  const payload = JSON.stringify({
+    state: today,
+    attributes: { friendly_name: 'Menu du jour – Gestionnaire', midi: buildSlot('midi'), soir: buildSlot('soir') },
+  });
+
+  const req = http.request({
+    hostname: 'supervisor', port: 80,
+    path: '/core/api/states/sensor.gestionnaire_menu_du_jour',
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${SUPERVISOR_TOKEN}`,
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(payload),
+    },
+  }, res => { res.resume(); console.log(`[gestionnaire] pushMenuToHA: HTTP ${res.statusCode}`); });
+  req.on('error', e => console.warn('[gestionnaire] pushMenuToHA erreur:', e.message));
+  req.write(payload);
+  req.end();
 }
 
 // --- Static files ---
@@ -224,6 +276,7 @@ const server = http.createServer(async (req, res) => {
         }
         writeDB('cart', cart);
         sendJSON(res, { ...newEntry, nom: meal.nom }, 201);
+        pushMenuToHA();
 
       } else if (method === 'PUT' && id) {
         const body = await parseBody(req);
@@ -236,6 +289,7 @@ const server = http.createServer(async (req, res) => {
         const meals = readDB('meals');
         const meal = meals.find(m => m.id === currentMeals[idx].repasId);
         sendJSON(res, { ...currentMeals[idx], nom: meal ? meal.nom : '(supprimé)' });
+        pushMenuToHA();
 
       } else if (method === 'DELETE' && id) {
         const body = await parseBody(req);
@@ -263,6 +317,7 @@ const server = http.createServer(async (req, res) => {
 
         writeDB('current_meals', currentMeals.filter(c => c.id !== id));
         sendJSON(res, { ok: true });
+        pushMenuToHA();
       }
 
     // ---- PANIER ----
@@ -428,4 +483,5 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Gestionnaire de courses démarré sur le port ${PORT}`);
+  pushMenuToHA();
 });
